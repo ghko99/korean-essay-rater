@@ -2,6 +2,8 @@
 
 FastAPI + vLLM 기반의 한국어 에세이 자동 채점 웹 애플리케이션입니다.
 Llama 기반 모델에 LoRA 어댑터를 결합하여 에세이를 8개 루브릭 항목으로 채점하고, 상세 피드백을 실시간 스트리밍으로 제공합니다.
+<img width="1078" height="896" alt="image" src="https://github.com/user-attachments/assets/4cff0e1c-a58d-4276-89ba-08e59886f890" />
+<img width="904" height="918" alt="image" src="https://github.com/user-attachments/assets/5a111cbe-4f6d-4513-8d16-e60d62461973" />
 
 ---
 
