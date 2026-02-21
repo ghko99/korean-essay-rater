@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 작문 분석 시스템</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+/* ── Reset & Base ──────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0f1a;
+  --surface:#111827;
+  --surface2:#1a2236;
+  --border:#1e293b;
+  --accent:#6366f1;
+  --accent2:#818cf8;
+  --accent-glow:rgba(99,102,241,.25);
+  --green:#10b981;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+  --text3:#64748b;
+  --radius:12px;
+}
+html{font-size:15px}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,
+    'Segoe UI',Roboto,'Noto Sans KR',sans-serif;
+  line-height:1.7;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;top:-40%;left:-20%;
+  width:80vw;height:80vw;
+  background:radial-gradient(circle,rgba(99,102,241,.08) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+/* ── Layout ────────────────────────────────────────── */
+.container{
+  max-width:1100px;margin:0 auto;padding:2rem 1.5rem;
+  position:relative;z-index:1;
+}
+
+/* ── Header ────────────────────────────────────────── */
+header{text-align:center;margin-bottom:3rem}
+.logo{
+  display:inline-flex;align-items:center;gap:.7rem;
+  font-size:1.6rem;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(135deg,var(--accent),#a78bfa);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.logo svg{width:32px;height:32px;fill:var(--accent)}
+header p{color:var(--text2);margin-top:.5rem;font-size:.95rem}
+
+/* ── Cards ─────────────────────────────────────────── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.8rem;
+  margin-bottom:1.5rem;
+  transition:border-color .3s;
+}
+.card:hover{border-color:rgba(99,102,241,.3)}
+.card-title{
+  font-size:1rem;font-weight:700;color:var(--text2);
+  text-transform:uppercase;letter-spacing:.06em;
+  margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;
+}
+.card-title .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);display:inline-block;
+}
+
+/* ── Form elements ─────────────────────────────────── */
+select,textarea{
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--text);
+  font-family:inherit;font-size:.95rem;
+  padding:.8rem 1rem;
+  transition:border-color .2s,box-shadow .2s;
+  outline:none;
+}
+select:focus,textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+textarea{resize:vertical;min-height:180px;line-height:1.8}
+select option{background:var(--surface2);color:var(--text)}
+
+/* ── Question display ─────────────────────────────── */
+.question-display{
+  margin-top:1rem;padding:1rem 1.2rem;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-left:3px solid var(--accent);
+  border-radius:0 8px 8px 0;
+  font-size:.95rem;line-height:1.8;
+  color:var(--text);
+  display:none;
+}
+
+.keywords-row{
+  display:flex;align-items:center;gap:.6rem;
+  margin-top:.8rem;flex-wrap:wrap;
+}
+.keywords-label{font-size:.8rem;color:var(--text3);flex-shrink:0}
+.keywords-tag{
+  display:inline-block;
+  background:rgba(99,102,241,.12);
+  color:var(--accent2);
+  border:1px solid rgba(99,102,241,.25);
+  padding:.15rem .55rem;border-radius:20px;
+  font-size:.8rem;
+}
+
+/* ── Stats row ─────────────────────────────────────── */
+.essay-stats{
+  display:flex;gap:1.5rem;margin-top:.8rem;
+  color:var(--text3);font-size:.85rem;
+}
+.essay-stats span{display:flex;align-items:center;gap:.3rem}
+.analysis-badge{
+  padding:.1rem .5rem;border-radius:4px;
+  background:rgba(99,102,241,.1);color:var(--accent2);
+  border:1px solid rgba(99,102,241,.2);
+  font-size:.78rem;
+}
+.analysis-badge.loading{opacity:.6;animation:badgePulse 1s infinite}
+@keyframes badgePulse{0%,100%{opacity:.6}50%{opacity:1}}
+
+/* ── Morpheme display ─────────────────────────────── */
+.morph-section{
+  margin-top:1rem;display:none;
+  animation:fadeUp .3s ease;
+}
+.morph-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.5rem;flex-wrap:wrap;gap:.4rem;
+}
+.morph-header .section-label{font-size:.82rem;color:var(--text3)}
+.morph-sent-info{
+  font-size:.78rem;color:var(--accent2);
+  background:rgba(99,102,241,.08);
+  padding:.15rem .5rem;border-radius:4px;
+  border:1px solid rgba(99,102,241,.15);
+}
+.morph-legend{
+  display:flex;flex-wrap:wrap;gap:.5rem;
+  margin-bottom:.5rem;
+}
+.legend-item{
+  display:inline-flex;align-items:center;gap:.25rem;
+  font-size:.72rem;color:var(--text3);
+}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.morph-display{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:.8rem 1rem;
+  max-height:180px;overflow-y:auto;
+  line-height:2.2;
+}
+.morph-display::-webkit-scrollbar{width:5px}
+.morph-display::-webkit-scrollbar-track{background:transparent}
+.morph-display::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.morph{
+  display:inline-block;
+  padding:1px 5px;margin:1px 1px;
+  border-radius:4px;
+  font-size:.84rem;
+  cursor:default;
+  border-bottom:2px solid transparent;
+  transition:opacity .15s;
+  position:relative;
+}
+.morph:hover{opacity:.75}
+.morph sub{
+  font-size:.6rem;color:var(--text3);
+  margin-left:2px;vertical-align:baseline;
+  opacity:.7;
+}
+.cat-noun{background:rgba(59,130,246,.12);border-bottom-color:#3b82f6;color:#93c5fd}
+.cat-verb{background:rgba(16,185,129,.12);border-bottom-color:#10b981;color:#6ee7b7}
+.cat-josa{background:rgba(245,158,11,.08);border-bottom-color:#f59e0b;color:#fcd34d}
+.cat-mod{background:rgba(139,92,246,.1);border-bottom-color:#8b5cf6;color:#c4b5fd}
+.cat-end{background:rgba(236,72,153,.08);border-bottom-color:#ec4899;color:#f9a8d4}
+.cat-punct{background:rgba(148,163,184,.08);border-bottom-color:#64748b;color:#94a3b8}
+.cat-affix{background:rgba(20,184,166,.08);border-bottom-color:#14b8a6;color:#5eead4}
+.cat-other{background:rgba(148,163,184,.05);border-bottom-color:#475569;color:#94a3b8}
+.morph-sent{
+  display:flex;align-items:flex-start;flex-wrap:wrap;gap:2px;
+  padding:.4rem 0;
+  border-bottom:1px solid rgba(30,41,59,.5);
+}
+.morph-sent:last-child{border-bottom:none}
+.morph-sent-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(99,102,241,.15);color:var(--accent2);
+  font-size:.65rem;font-weight:700;flex-shrink:0;
+  margin-right:.3rem;margin-top:2px;
+}
+.morph-word{
+  display:inline-flex;align-items:baseline;
+  background:rgba(255,255,255,.02);
+  border-radius:4px;padding:0 1px;
+}
+
+/* ── Feature highlight ─────────────────────────────── */
+.morph-display.feat-active .morph{opacity:.2;transition:opacity .2s}
+.morph-display.feat-active .morph.feat-hl{
+  opacity:1;
+  outline:2px solid var(--accent);
+  outline-offset:1px;
+  box-shadow:0 0 8px var(--accent-glow);
+  z-index:1;
+}
+.feat-badge{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.2rem .65rem;border-radius:6px;
+  background:rgba(99,102,241,.15);color:var(--accent2);
+  border:1px solid rgba(99,102,241,.3);
+  font-size:.78rem;cursor:pointer;
+  animation:fadeUp .25s ease;
+  white-space:nowrap;
+}
+.feat-badge:hover{background:rgba(99,102,241,.25)}
+.feat-badge .close-x{font-size:.7rem;opacity:.6;margin-left:.1rem}
+.morph-sent.sent-hl{
+  background:rgba(99,102,241,.06);
+  border-color:rgba(99,102,241,.3);
+  border-radius:6px;
+  padding:.4rem .5rem;
+}
+.morph-sent.sent-hl .morph-sent-num{
+  background:rgba(99,102,241,.45);
+  box-shadow:0 0 10px var(--accent-glow);
+  transform:scale(1.15);
+  transition:all .3s;
+}
+.feat-clickable-hint{
+  font-size:.72rem;color:var(--text3);opacity:.7;
+  margin-left:.4rem;font-weight:400;
+}
+
+/* ── Button ────────────────────────────────────────── */
+.btn-analyze{
+  width:100%;padding:1rem;
+  background:linear-gradient(135deg,var(--accent),#7c3aed);
+  color:#fff;font-size:1.05rem;font-weight:700;
+  border:none;border-radius:8px;cursor:pointer;
+  letter-spacing:.02em;
+  transition:transform .15s,box-shadow .2s,opacity .2s;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.btn-analyze:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 8px 30px rgba(99,102,241,.35);
+}
+.btn-analyze:disabled{opacity:.5;cursor:not-allowed}
+.btn-analyze .spinner{
+  display:none;width:20px;height:20px;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin .7s linear infinite;
+  margin-right:.5rem;
+}
+.btn-analyze.loading .spinner{display:inline-block}
+.btn-analyze.loading .btn-text{opacity:.8}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Analysis panel ────────────────────────────────── */
+#analysis-panel{display:none}
+#analysis-panel.visible{display:block;animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+/* ── Pipeline steps ────────────────────────────────── */
+.pipeline{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.5rem}
+.step{
+  display:flex;align-items:center;gap:.8rem;
+  padding:.7rem 1rem;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);
+  font-size:.9rem;color:var(--text3);
+  transition:all .3s;
+}
+.step.active{border-color:var(--accent);color:var(--text)}
+.step.done{border-color:var(--green);color:var(--green)}
+.step-icon{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;flex-shrink:0;
+  background:var(--surface);border:1px solid var(--border);
+  transition:all .3s;
+}
+.step.active .step-icon{
+  border-color:var(--accent);color:var(--accent);
+  box-shadow:0 0 12px var(--accent-glow);
+  animation:pulse 1.5s infinite;
+}
+.step.done .step-icon{background:var(--green);border-color:var(--green);color:#fff}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 8px var(--accent-glow)}
+  50%{box-shadow:0 0 20px var(--accent-glow)}
+}
+
+/* ── Features chart ────────────────────────────────── */
+.features-section{margin-top:1rem;display:none}
+.features-section .section-label{
+  font-size:.82rem;color:var(--text3);margin-bottom:.6rem;
+}
+.features-chart-wrap{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:1rem;
+  max-height:400px;overflow-y:auto;
+}
+.features-chart-wrap::-webkit-scrollbar{width:5px}
+.features-chart-wrap::-webkit-scrollbar-track{background:transparent}
+.features-chart-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.features-chart-wrap canvas{width:100%!important}
+
+/* ── Score section ─────────────────────────────────── */
+.score-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1.5rem;
+  align-items:start;
+}
+@media(max-width:768px){.score-grid{grid-template-columns:1fr}}
+.chart-wrap{
+  display:flex;align-items:center;justify-content:center;padding:1rem;
+}
+.chart-wrap canvas{max-width:360px;max-height:360px}
+.score-bars{display:flex;flex-direction:column;gap:.7rem}
+.score-item{
+  display:flex;align-items:center;gap:.8rem;
+  cursor:pointer;border-radius:6px;padding:.15rem .3rem;
+  transition:background .15s;
+}
+.score-item:hover{background:rgba(99,102,241,.08)}
+.score-item.selected{
+  background:rgba(99,102,241,.14);
+  outline:1px solid rgba(99,102,241,.35);
+}
+.score-label{
+  width:130px;font-size:.85rem;color:var(--text2);
+  flex-shrink:0;text-align:right;
+}
+.score-bar-track{
+  flex:1;height:8px;border-radius:4px;
+  background:var(--surface2);overflow:hidden;
+}
+.score-bar-fill{
+  height:100%;border-radius:4px;
+  width:0;transition:width .8s cubic-bezier(.22,1,.36,1);
+}
+.score-val{
+  width:36px;font-size:.9rem;font-weight:700;
+  color:var(--accent2);text-align:center;
+}
+.total-score{
+  text-align:center;margin-top:1.2rem;
+  padding:1rem;border-radius:8px;
+  background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(167,139,250,.08));
+  border:1px solid rgba(99,102,241,.2);
+}
+.total-score .big{font-size:2.4rem;font-weight:800;color:var(--accent2)}
+.total-score .label{font-size:.85rem;color:var(--text3)}
+.ensemble-info{
+  display:inline-flex;align-items:center;gap:.4rem;
+  margin-top:.7rem;
+  padding:.25rem .75rem;
+  border-radius:20px;
+  background:rgba(99,102,241,.08);
+  border:1px solid rgba(99,102,241,.18);
+  font-size:.78rem;color:var(--text3);
+}
+.ensemble-info .ei-fraction{
+  font-weight:700;color:var(--accent2);letter-spacing:.02em;
+}
+.ensemble-info .ei-bar{
+  width:48px;height:4px;border-radius:2px;
+  background:rgba(99,102,241,.15);
+  overflow:hidden;flex-shrink:0;
+}
+.ensemble-info .ei-bar-fill{
+  height:100%;border-radius:2px;
+  background:linear-gradient(90deg,var(--accent),#a78bfa);
+  transition:width .6s cubic-bezier(.22,1,.36,1);
+}
+
+/* ── Streaming area ────────────────────────────────── */
+.stream-box{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:1rem 1.2rem;
+  min-height:60px;
+  font-size:.88rem;line-height:1.8;
+  white-space:pre-wrap;
+  color:var(--text3);
+  max-height:200px;overflow-y:auto;
+}
+.stream-box::-webkit-scrollbar{width:5px}
+.stream-box::-webkit-scrollbar-track{background:transparent}
+.stream-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.cursor-blink::after{
+  content:'|';color:var(--accent);animation:blink .8s step-end infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── Evaluator feedback cards ─────────────────────── */
+
+.rubric-card{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:1.1rem 1.2rem;
+  transition:border-color .3s,transform .2s;
+  animation:fadeUp .4s ease both;
+}
+.rubric-card:hover{
+  border-color:rgba(99,102,241,.3);
+  transform:translateY(-2px);
+}
+.rubric-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.7rem;padding-bottom:.6rem;
+  border-bottom:1px solid var(--border);
+}
+.rubric-name{
+  font-size:.88rem;font-weight:700;color:var(--text);
+}
+.rubric-score-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:52px;padding:.2rem .6rem;
+  border-radius:6px;font-size:.82rem;font-weight:700;
+}
+.rubric-score-badge.high{
+  background:rgba(16,185,129,.12);color:var(--green);
+  border:1px solid rgba(16,185,129,.25);
+}
+.rubric-score-badge.mid{
+  background:rgba(245,158,11,.1);color:var(--amber);
+  border:1px solid rgba(245,158,11,.25);
+}
+.rubric-score-badge.low{
+  background:rgba(239,68,68,.1);color:var(--red);
+  border:1px solid rgba(239,68,68,.25);
+}
+.rubric-body{
+  font-size:.85rem;line-height:1.8;color:var(--text2);
+}
+
+/* ── Evaluator rubric sub-items ───────────────────── */
+.eval-rubrics{
+  display:grid;grid-template-columns:1fr 1fr;gap:.6rem;
+}
+@media(max-width:768px){.eval-rubrics{grid-template-columns:1fr}}
+.eval-rubric-item{
+  padding:.6rem .8rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  transition:border-color .2s;
+}
+.eval-rubric-item:hover{border-color:rgba(99,102,241,.2)}
+.eval-rubric-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.3rem;
+}
+.eval-rubric-name{
+  font-size:.8rem;font-weight:600;color:var(--text2);
+}
+.eval-rubric-score{
+  font-size:.75rem;font-weight:700;
+  padding:.1rem .4rem;border-radius:4px;
+}
+.eval-rubric-score.high{background:rgba(16,185,129,.12);color:var(--green)}
+.eval-rubric-score.mid{background:rgba(245,158,11,.1);color:var(--amber)}
+.eval-rubric-score.low{background:rgba(239,68,68,.1);color:var(--red)}
+.eval-rubric-body{
+  font-size:.78rem;line-height:1.7;color:var(--text3);
+}
+
+/* ── Footer ────────────────────────────────────────── */
+footer{
+  text-align:center;padding:2rem 0 1rem;
+  color:var(--text3);font-size:.8rem;
+}
+
+/* ── Essay Statistics Panel ─────────────────────────── */
+.essay-stats-panel{
+  margin-top:1rem;padding:.9rem 1rem;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;
+}
+.stats-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:.8rem;text-align:center;
+}
+@media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-item{display:flex;flex-direction:column;gap:.25rem;align-items:center}
+.stat-val{font-size:1.25rem;font-weight:800;color:var(--accent2)}
+.stat-label{font-size:.72rem;color:var(--text3)}
+
+/* ── Score range label ──────────────────────────────── */
+.score-range-label{
+  font-size:.72rem;color:var(--text3);white-space:nowrap;
+  min-width:38px;text-align:center;flex-shrink:0;
+}
+
+/* ── Download button ────────────────────────────────── */
+.btn-download{
+  width:100%;margin-top:1rem;padding:.65rem 1rem;
+  background:rgba(99,102,241,.12);color:var(--accent2);
+  border:1px solid rgba(99,102,241,.25);border-radius:8px;
+  font-size:.88rem;font-weight:600;cursor:pointer;
+  transition:background .2s,border-color .2s;
+  letter-spacing:.02em;font-family:inherit;
+}
+.btn-download:hover{background:rgba(99,102,241,.22);border-color:rgba(99,102,241,.4)}
+
+/* ── History section ────────────────────────────────── */
+.history-items{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem}
+.history-item{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:.65rem .9rem;background:var(--surface2);
+  border:1px solid var(--border);border-radius:8px;
+  cursor:pointer;transition:border-color .2s,background .2s;
+}
+.history-item:hover{border-color:rgba(99,102,241,.35);background:rgba(99,102,241,.04)}
+.history-item-main{flex:1;min-width:0}
+.history-meta{font-size:.7rem;color:var(--text3);margin-bottom:.12rem}
+.history-question{font-size:.83rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-score-badge{
+  flex-shrink:0;padding:.18rem .55rem;border-radius:6px;font-size:.8rem;font-weight:700;
+}
+.history-score-badge.high{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.history-score-badge.mid{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.history-score-badge.low{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.history-header-row{display:flex;align-items:center}
+.history-clear-btn{
+  margin-left:auto;background:none;border:none;color:var(--text3);
+  cursor:pointer;font-size:.75rem;padding:.1rem .3rem;
+  opacity:.6;transition:opacity .2s,color .2s;font-family:inherit;
+}
+.history-clear-btn:hover{opacity:1;color:var(--red)}
+
+/* ── Score probability heatmap ──────────────────────── */
+.score-probs-section{margin-top:1.2rem;display:none;animation:fadeUp .3s ease}
+.probs-table{
+  width:100%;border-collapse:separate;border-spacing:3px;font-size:.78rem;
+}
+.probs-table th{
+  color:var(--text3);padding:.25rem .3rem;text-align:center;
+  font-weight:600;font-size:.72rem;
+}
+.probs-th-label{width:126px;text-align:right!important}
+.probs-label{
+  color:var(--text2);text-align:right;padding-right:.55rem;
+  white-space:nowrap;font-size:.8rem;vertical-align:middle;
+}
+.probs-cell{
+  text-align:center;border-radius:4px;padding:.28rem .2rem;
+  min-width:50px;cursor:default;
+  font-size:.67rem;font-weight:700;line-height:1.4;
+  transition:background .5s;
+  white-space:nowrap;
+}
+.probs-cell.argmax{outline:2px solid rgba(255,255,255,.55);outline-offset:-2px}
+
+/* ── Distribution chart (on criterion click) ────────── */
+.dist-section{margin-top:1.2rem;display:none;animation:fadeUp .3s ease}
+.dist-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.6rem;
+}
+.dist-criterion-label{font-size:.82rem;color:var(--text3)}
+.dist-criterion-name{
+  font-size:.95rem;font-weight:700;color:var(--accent2);margin-left:.35rem;
+}
+.dist-close{
+  background:none;border:none;color:var(--text3);
+  cursor:pointer;font-size:.82rem;padding:.15rem .5rem;
+  opacity:.6;transition:opacity .2s,color .2s;font-family:inherit;
+  border-radius:4px;
+}
+.dist-close:hover{opacity:1;color:var(--red)}
+.dist-wrap{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:.8rem 1rem;height:200px;
+}
+
+/* ── Keyword highlight ──────────────────────────────── */
+.kw-highlight-section{margin-top:1rem;display:none;animation:fadeUp .3s ease}
+.kw-status-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.7rem}
+.kw-chip{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.2rem .65rem;border-radius:20px;
+  font-size:.8rem;font-weight:600;
+}
+.kw-chip.found{
+  background:rgba(16,185,129,.12);color:var(--green);
+  border:1px solid rgba(16,185,129,.25);
+}
+.kw-chip.missing{
+  background:rgba(239,68,68,.08);color:var(--red);
+  border:1px solid rgba(239,68,68,.2);
+}
+.kw-essay-preview{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:.8rem 1rem;
+  font-size:.88rem;line-height:2;color:var(--text2);
+  max-height:180px;overflow-y:auto;
+  white-space:pre-wrap;
+}
+.kw-essay-preview::-webkit-scrollbar{width:5px}
+.kw-essay-preview::-webkit-scrollbar-track{background:transparent}
+.kw-essay-preview::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.kw-mark{border-radius:3px;padding:0 3px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/><path d="M8 13h8v1.5H8zm0 3h5v1.5H8z"/></svg>
+      AI 작문 분석 시스템
+    </div>
+    <p>AI 기반 에세이 자동 채점 & 피드백 엔진</p>
+  </header>
+
+  <!-- Question Select -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>에세이 질문 선택</div>
+    <select id="question-select">
+      <option value="-1" disabled selected>질문을 선택하세요...</option>
+    </select>
+    <div class="question-display" id="question-display"></div>
+    <div class="keywords-row" id="keywords-area" style="display:none">
+      <span class="keywords-label">핵심 키워드</span>
+      <div id="keywords-list" style="display:contents"></div>
+    </div>
+  </div>
+
+  <!-- Essay Input -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>에세이 입력</div>
+    <textarea id="essay-input" placeholder="학생의 에세이를 입력하세요..."></textarea>
+    <div class="essay-stats">
+      <span id="char-count">0 자</span>
+      <span id="sent-analysis" class="analysis-badge" style="display:none"></span>
+    </div>
+    <!-- Morpheme analysis display -->
+    <div class="morph-section" id="morph-section">
+      <div class="morph-header">
+        <span class="section-label">텍스트 분석 결과</span>
+        <span class="morph-sent-info" id="morph-sent-info"></span>
+      </div>
+      <div class="morph-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>명사</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span>용언</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>조사</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span>수식언</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#ec4899"></span>어미</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#14b8a6"></span>접사</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#64748b"></span>부호</span>
+      </div>
+      <div class="morph-display" id="morph-display"></div>
+    </div>
+
+    <!-- Essay Statistics -->
+    <div class="essay-stats-panel" id="essay-stats-panel" style="display:none">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-val" id="stat-words">-</span>
+          <span class="stat-label">어절 수</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val" id="stat-sents">-</span>
+          <span class="stat-label">문장 수</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val" id="stat-avg-len">-</span>
+          <span class="stat-label">평균 문장 길이</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val" id="stat-ttr">-</span>
+          <span class="stat-label" title="고유 형태소 / 전체 형태소">어휘 다양도</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyword Highlight -->
+    <div class="kw-highlight-section" id="kw-highlight-section">
+      <div style="font-size:.82rem;color:var(--text3);margin-bottom:.5rem">
+        핵심 키워드 포함 여부
+      </div>
+      <div class="kw-status-row" id="kw-status-row"></div>
+      <div class="kw-essay-preview" id="kw-essay-preview"></div>
+    </div>
+  </div>
+
+  <!-- Analyze Button -->
+  <button class="btn-analyze" id="btn-analyze" disabled>
+    <span class="spinner"></span>
+    <span class="btn-text">작문 분석 시작</span>
+  </button>
+
+  <!-- History -->
+  <div class="card" id="history-card" style="display:none;margin-top:1rem">
+    <div class="card-title history-header-row">
+      <span class="dot"></span>채점 이력
+      <button class="history-clear-btn" onclick="clearHistory()">전체 삭제</button>
+    </div>
+    <div class="history-items" id="history-list"></div>
+  </div>
+
+  <!-- Analysis Panel -->
+  <div id="analysis-panel">
+
+    <!-- Pipeline steps -->
+    <div class="card" style="margin-top:1.5rem">
+      <div class="card-title"><span class="dot"></span>분석 파이프라인</div>
+      <div class="pipeline">
+        <div class="step" id="step-feature"><div class="step-icon">1</div><span>형태소 분석 & 언어 특징 추출</span></div>
+        <div class="step" id="step-model"><div class="step-icon">2</div><span>AI 채점 모델 추론</span></div>
+        <div class="step" id="step-score"><div class="step-icon">3</div><span>채점 결과 산출 & 피드백 생성</span></div>
+      </div>
+      <!-- Features visualization -->
+      <div class="features-section" id="features-section">
+        <div class="section-label">추출된 언어 특징 (형태소 분석 결과)</div>
+        <div class="features-chart-wrap">
+          <canvas id="features-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Streaming area (visible during generation) -->
+    <div class="card" id="stream-card" style="display:none">
+      <div class="card-title"><span class="dot"></span>AI 생성 중...</div>
+      <div class="stream-box cursor-blink" id="stream-box"></div>
+    </div>
+
+    <!-- Score Visualization -->
+    <div class="card" id="score-card" style="display:none">
+      <div class="card-title"><span class="dot"></span>채점 결과</div>
+      <div class="score-grid">
+        <div class="chart-wrap"><canvas id="radar-chart"></canvas></div>
+        <div>
+          <div class="score-bars" id="score-bars"></div>
+          <div class="total-score">
+            <div class="label">종합 점수</div>
+            <div class="big" id="total-score">-</div>
+            <div id="ensemble-info" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Score probability heatmap (greedy logprobs, temperature=0) -->
+      <div class="score-probs-section" id="score-probs-section">
+        <div style="font-size:.82rem;color:var(--text3);margin-bottom:.5rem">
+          모델 내부 확률 분포
+          <span style="font-size:.72rem;opacity:.6">
+            (greedy temperature=0 단일 추론 · 각 점수 토큰의 raw softmax 확률)
+          </span>
+        </div>
+        <div id="probs-heatmap"></div>
+      </div>
+
+      <!-- Distribution chart (shown on criterion click) -->
+      <div class="dist-section" id="dist-section">
+        <div class="dist-header">
+          <div>
+            <span class="dist-criterion-label">점수 분포 ·</span>
+            <span class="dist-criterion-name" id="dist-criterion-name"></span>
+          </div>
+          <button class="dist-close" onclick="hideDistribution()">✕ 닫기</button>
+        </div>
+        <div class="dist-wrap">
+          <canvas id="dist-chart"></canvas>
+        </div>
+      </div>
+      <button class="btn-download" id="btn-download" onclick="downloadResults()" style="display:none">⬇ 결과 다운로드</button>
+    </div>
+
+    <!-- Evaluator Feedback -->
+    <div class="card" id="feedback-card" style="display:none">
+      <div class="card-title"><span class="dot"></span>평가자 피드백</div>
+      <div id="evaluators-info" style="display:none"></div>
+      <div id="evaluator-cards" style="display:flex;flex-direction:column;gap:1rem"></div>
+    </div>
+  </div>
+
+  <footer>Korean Essay Rater &middot; Powered by vLLM + LoRA Fine-tuned Model</footer>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const questionSelect = $('#question-select');
+const essayInput = $('#essay-input');
+const btnAnalyze = $('#btn-analyze');
+const analysisPanel = $('#analysis-panel');
+let questionsData = [];
+let radarChart = null;
+let featuresChart = null;
+let distChart = null;
+let lastDistributions = null;
+let selectedCriterionIdx = null;
+let activeFeat = null;
+let allMorphEls = [];
+let lastAnalysisData = null;
+const HISTORY_KEY = 'korean_essay_score_history';
+
+const CRITERIA = [
+  '과제 수행의 충실성','설명의 명료성','설명의 구체성','설명의 적절성',
+  '문장의 연결성','글의 통일성','어휘의 적절성','어법의 적절성'
+];
+
+// Per-keyword color palette (bg, text, chip variants)
+const KW_COLORS = [
+  { bg:'rgba(245,158,11,.32)',  text:'#fcd34d', chipBg:'rgba(245,158,11,.12)', chipBorder:'rgba(245,158,11,.4)'  }, // amber
+  { bg:'rgba(6,182,212,.28)',   text:'#67e8f9', chipBg:'rgba(6,182,212,.1)',   chipBorder:'rgba(6,182,212,.38)' }, // cyan
+  { bg:'rgba(236,72,153,.28)',  text:'#f9a8d4', chipBg:'rgba(236,72,153,.1)', chipBorder:'rgba(236,72,153,.38)'}, // pink
+  { bg:'rgba(132,204,22,.28)',  text:'#bef264', chipBg:'rgba(132,204,22,.1)', chipBorder:'rgba(132,204,22,.38)'}, // lime
+  { bg:'rgba(251,146,60,.28)',  text:'#fdba74', chipBg:'rgba(251,146,60,.1)', chipBorder:'rgba(251,146,60,.38)'}, // orange
+  { bg:'rgba(167,139,250,.28)', text:'#c4b5fd', chipBg:'rgba(167,139,250,.1)',chipBorder:'rgba(167,139,250,.38)'}, // violet
+];
+
+// ── Load questions ───────────────────────────────────
+fetch('/api/questions').then(r=>r.json()).then(data=>{
+  questionsData = data;
+  data.forEach(q=>{
+    const opt = document.createElement('option');
+    opt.value = q.idx;
+    opt.textContent = `${q.idx+1}. ${q.question.length>50 ? q.question.slice(0,50)+'…' : q.question}`;
+    questionSelect.appendChild(opt);
+  });
+});
+
+// ── Question change → show full text & keywords ──────
+questionSelect.addEventListener('change', ()=>{
+  const idx = +questionSelect.value;
+  if(idx<0) return;
+  const q = questionsData[idx];
+
+  // Show full question text
+  const display = $('#question-display');
+  display.textContent = q.question;
+  display.style.display = 'block';
+
+  // Show keywords
+  const area = $('#keywords-area');
+  const list = $('#keywords-list');
+  list.innerHTML = '';
+  q.keywords.split(',').forEach(k=>{
+    const span = document.createElement('span');
+    span.className = 'keywords-tag';
+    span.textContent = k.trim();
+    list.appendChild(span);
+  });
+  area.style.display = 'flex';
+  checkReady();
+  updateKeywordHighlight();
+});
+
+// ── Essay stats ──────────────────────────────────────
+let analysisTimer = null;
+let analysisAbort = null;
+let morphSentenceCount = 0;
+
+essayInput.addEventListener('input', ()=>{
+  const text = essayInput.value;
+  $('#char-count').textContent = text.length + ' 자';
+  morphSentenceCount = 0;
+
+  // Debounced text analysis (1s after last keystroke)
+  clearTimeout(analysisTimer);
+  if(analysisAbort) analysisAbort.abort();
+  const badge = $('#sent-analysis');
+  const morphSection = $('#morph-section');
+
+  if(text.trim().length > 5){
+    badge.style.display = 'inline-flex';
+    badge.textContent = '분석 중...';
+    badge.classList.add('loading');
+    analysisTimer = setTimeout(()=>{
+      analysisAbort = new AbortController();
+      fetch('/api/text-analysis', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({essay: text}),
+        signal: analysisAbort.signal,
+      }).then(r=>r.json()).then(data=>{
+        const cnt = data.sentences ? data.sentences.length : 0;
+        morphSentenceCount = cnt;
+        badge.textContent = '형태소 분석: ' + cnt + ' 문장' + (cnt >= 2 ? '' : ' (2문장 이상 필요)');
+        badge.classList.remove('loading');
+        renderMorphemes(data.sentences || []);
+        checkReady();
+      }).catch(e=>{
+        if(e.name !== 'AbortError'){
+          morphSentenceCount = 0;
+          badge.style.display = 'none';
+          morphSection.style.display = 'none';
+          checkReady();
+        }
+      });
+    }, 1000);
+  } else {
+    morphSentenceCount = 0;
+    badge.style.display = 'none';
+    morphSection.style.display = 'none';
+  }
+  checkReady();
+  updateKeywordHighlight();
+});
+
+function checkReady(){
+  const qIdx = Number(questionSelect.value);
+  const hasQuestion = Number.isFinite(qIdx) && qIdx >= 0;
+  btnAnalyze.disabled = !(hasQuestion && essayInput.value.trim().length > 10 && morphSentenceCount >= 2);
+}
+
+// ── Analyze ──────────────────────────────────────────
+btnAnalyze.addEventListener('click', ()=>{
+  if(btnAnalyze.disabled) return;
+  startAnalysis();
+});
+
+async function startAnalysis(){
+  btnAnalyze.disabled = true;
+  btnAnalyze.classList.add('loading');
+  btnAnalyze.querySelector('.btn-text').textContent = '분석 중...';
+
+  // Reset UI
+  analysisPanel.classList.add('visible');
+  ['step-feature','step-model','step-score'].forEach(id=>{
+    document.getElementById(id).classList.remove('active','done');
+  });
+  $('#features-section').style.display = 'none';
+  $('#stream-card').style.display = 'none';
+  $('#stream-box').textContent = '';
+  $('#stream-box').classList.add('cursor-blink');
+  $('#score-card').style.display = 'none';
+  $('#score-probs-section').style.display = 'none';
+  hideDistribution();
+  $('#feedback-card').style.display = 'none';
+  $('#evaluator-cards').innerHTML = '';
+  $('#evaluators-info').textContent = '';
+  $('#ensemble-info').textContent = '';
+  $('#btn-download').style.display = 'none';
+  lastAnalysisData = null;
+
+  setStep('step-feature','active');
+  clearFeatureHighlight();
+
+  // Scroll to analysis panel
+  analysisPanel.scrollIntoView({behavior:'smooth', block:'start'});
+
+  const body = JSON.stringify({
+    question_idx: +questionSelect.value,
+    essay: essayInput.value
+  });
+
+  try {
+    const resp = await fetch('/api/analyze', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body
+    });
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while(true){
+      const {done,value} = await reader.read();
+      if(done) break;
+      buf += decoder.decode(value, {stream:true});
+      const lines = buf.split('\n');
+      buf = lines.pop();
+
+      for(const line of lines){
+        if(!line.startsWith('data: ')) continue;
+        const data = JSON.parse(line.slice(6));
+
+        if(data.type === 'status'){
+          if(data.message.includes('언어 특징')){
+            setStep('step-feature','active');
+          } else if(data.message.includes('AI 분석')){
+            setStep('step-feature','done');
+            setStep('step-model','active');
+          }
+        }
+
+        if(data.type === 'features'){
+          renderFeaturesChart(data.full || {});
+        }
+
+        if(data.type === 'token'){
+          if($('#stream-card').style.display === 'none'){
+            $('#stream-card').style.display = 'block';
+          }
+          $('#stream-box').textContent += data.text;
+          $('#stream-box').scrollTop = $('#stream-box').scrollHeight;
+        }
+
+        if(data.type === 'scores'){
+          setStep('step-model','done');
+          setStep('step-score','done');
+          $('#stream-box').classList.remove('cursor-blink');
+          lastAnalysisData = {
+            question: questionsData[+questionSelect.value]?.question || '',
+            criteria: data.criteria,
+            scores: data.scores,
+            distributions: data.distributions,
+            validCount: data.valid_count,
+            totalCount: data.total_count,
+            timestamp: Date.now(),
+            evaluators: null,
+          };
+          renderScores(data.criteria, data.scores, data.valid_count, data.total_count, data.distributions);
+        }
+
+        if(data.type === 'evaluators'){
+          if(lastAnalysisData) lastAnalysisData.evaluators = data.evaluators;
+          renderEvaluators(data);
+          $('#stream-card').style.display = 'none';
+          if(lastAnalysisData){
+            saveToHistory(+questionSelect.value, lastAnalysisData.question, lastAnalysisData.scores);
+            $('#btn-download').style.display = 'block';
+          }
+        }
+
+        if(data.type === 'score_probs'){
+          renderScoreProbs(data.probs);
+        }
+
+        if(data.type === 'done'){
+          // Nothing extra needed
+        }
+
+        if(data.type === 'error'){
+          alert(data.message || '평가를 진행할 수 없습니다.');
+          await reader.cancel();
+          throw new Error(data.message || 'analysis_blocked');
+        }
+      }
+    }
+  } catch(e){
+    console.error(e);
+  }
+
+  btnAnalyze.disabled = false;
+  btnAnalyze.classList.remove('loading');
+  btnAnalyze.querySelector('.btn-text').textContent = '작문 분석 시작';
+}
+
+function setStep(id, state){
+  const el = document.getElementById(id);
+  el.classList.remove('active','done');
+  el.classList.add(state);
+}
+
+// ── Render features chart ────────────────────────────
+function renderFeaturesChart(features){
+  const section = $('#features-section');
+  section.style.display = 'block';
+
+  // Add clickability hint to section label
+  const sectionLabel = section.querySelector('.section-label');
+  if(sectionLabel && !sectionLabel.querySelector('.feat-clickable-hint')){
+    const hint = document.createElement('span');
+    hint.className = 'feat-clickable-hint';
+    hint.textContent = '(항목을 클릭하면 해당 요소가 표시됩니다)';
+    sectionLabel.appendChild(hint);
+  }
+
+  const entries = Object.entries(features)
+    .filter(([,v])=>v>0)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0, 25);
+
+  if(entries.length === 0){
+    section.querySelector('.features-chart-wrap').innerHTML =
+      '<div style="text-align:center;color:var(--text3);padding:1rem">추출된 특징 없음</div>';
+    return;
+  }
+
+  const labels = entries.map(([k])=>k);
+  const values = entries.map(([,v])=>v);
+
+  // Dynamic height based on bar count
+  const canvas = $('#features-chart');
+  const chartHeight = Math.max(200, entries.length * 28 + 40);
+  canvas.parentElement.style.maxHeight = (chartHeight + 20) + 'px';
+
+  const ctx = canvas.getContext('2d');
+  if(featuresChart) featuresChart.destroy();
+
+  featuresChart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        data: values,
+        backgroundColor: values.map((_,i) => {
+          const ratio = i / Math.max(values.length-1, 1);
+          return `rgba(${Math.round(99+30*ratio)},${Math.round(102+80*ratio)},241,0.6)`;
+        }),
+        borderColor: 'rgba(129,140,248,.8)',
+        borderWidth: 1,
+        borderRadius: 3,
+        barThickness: 18,
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      maintainAspectRatio:false,
+      layout:{ padding:{right:10} },
+      scales:{
+        x:{
+          beginAtZero:true,
+          ticks:{color:'#64748b',font:{size:10}},
+          grid:{color:'rgba(51,65,85,.3)'},
+        },
+        y:{
+          ticks:{color:'#94a3b8',font:{size:11,family:'inherit'},mirror:false},
+          grid:{display:false},
+        }
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1e293b',
+          titleColor:'#e2e8f0',
+          bodyColor:'#e2e8f0',
+          borderColor:'#334155',
+          borderWidth:1,
+        }
+      },
+      animation:{duration:600},
+      onClick: (event, elements) => {
+        if(elements.length > 0){
+          const idx = elements[0].index;
+          highlightFeature(labels[idx]);
+        }
+      },
+      onHover: (event, elements) => {
+        event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+      }
+    }
+  });
+
+  // Resize canvas to fit
+  canvas.style.height = chartHeight + 'px';
+  featuresChart.resize();
+}
+
+// ── Render scores ────────────────────────────────────
+function renderScores(criteria, scores, validCount, totalCount, distributions){
+  const card = $('#score-card');
+  card.style.display = 'block';
+  card.style.animation = 'fadeUp .5s ease';
+
+  lastDistributions = distributions || [];
+  hideDistribution();
+
+  const barsEl = $('#score-bars');
+  barsEl.innerHTML = '';
+  criteria.forEach((c,i)=>{
+    const s = scores[i]||0;
+    const color = scoreColor(s);
+    const item = document.createElement('div');
+    item.className = 'score-item';
+    item.title = '클릭하여 점수 분포 보기';
+    item.innerHTML = `
+      <div class="score-label">${c}</div>
+      <div class="score-bar-track"><div class="score-bar-fill" style="width:0;background:${color}"></div></div>
+      <div class="score-val" style="color:${color}">${s}</div>
+    `;
+    item.addEventListener('click', () => showDistribution(i, c, lastDistributions[i] || []));
+    barsEl.appendChild(item);
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        item.querySelector('.score-bar-fill').style.width = (s/9*100)+'%';
+      });
+    });
+  });
+
+  const total = scores.reduce((a,b)=>a+b,0);
+  const max = criteria.length * 9;
+  $('#total-score').textContent = total + ' / ' + max;
+
+  if(validCount != null && totalCount != null){
+    const pct = totalCount > 0 ? Math.round(validCount / totalCount * 100) : 0;
+    const ensembleEl = $('#ensemble-info');
+    ensembleEl.className = 'ensemble-info';
+    ensembleEl.style.display = 'inline-flex';
+    ensembleEl.innerHTML = `
+      앙상블 유효 응답
+      <span class="ei-fraction">${validCount}/${totalCount}</span>
+      <span class="ei-bar"><span class="ei-bar-fill" style="width:0%"></span></span>
+    `;
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        ensembleEl.querySelector('.ei-bar-fill').style.width = pct + '%';
+      });
+    });
+  }
+
+  renderRadar(criteria, scores);
+}
+
+function scoreColor(s){
+  if(s>=7) return 'var(--green)';
+  if(s>=4) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function renderRadar(labels, scores){
+  const ctx = $('#radar-chart').getContext('2d');
+  if(radarChart) radarChart.destroy();
+
+  radarChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: labels.map(l => l.length>6 ? l.slice(0,6)+'…' : l),
+      datasets: [{
+        label: '점수',
+        data: scores,
+        backgroundColor: 'rgba(99,102,241,.18)',
+        borderColor: 'rgba(129,140,248,.9)',
+        borderWidth: 2,
+        pointBackgroundColor: scores.map(s=>scoreColor(s)),
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        r: {
+          beginAtZero: true, min: 0, max: 9,
+          ticks: {
+            stepSize: 3, color: '#64748b',
+            backdropColor: 'transparent', font: { size: 10 }
+          },
+          grid: { color: 'rgba(51,65,85,.4)' },
+          angleLines: { color: 'rgba(51,65,85,.4)' },
+          pointLabels: { color: '#94a3b8', font: { size: 11, family: 'inherit' } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          titleColor: '#e2e8f0', bodyColor: '#e2e8f0',
+          borderColor: '#334155', borderWidth: 1,
+          callbacks: { label: ctx => ctx.parsed.r + ' / 9' }
+        }
+      },
+      animation: { duration: 800, easing: 'easeOutQuart' }
+    }
+  });
+}
+
+// ── Render evaluator feedback cards ──────────────────
+function renderEvaluators(data){
+  const container = $('#evaluator-cards');
+  container.innerHTML = '';
+
+  // (info elements hidden)
+
+  (data.evaluators || []).forEach((ev, i) => {
+    const total = ev.scores.reduce((a,b) => a+b, 0);
+    const max = ev.scores.length * 9;
+    const tier = total >= max*0.77 ? 'high' : total >= max*0.44 ? 'mid' : 'low';
+
+    // Build rubric sub-items
+    let rubricsHtml = '';
+    CRITERIA.forEach((criterion, ci) => {
+      const score = ev.scores[ci] || 0;
+      const fb = (ev.rubrics && ev.rubrics[ci]) ? ev.rubrics[ci] : '';
+      const st = score >= 7 ? 'high' : score >= 4 ? 'mid' : 'low';
+      rubricsHtml += `
+        <div class="eval-rubric-item">
+          <div class="eval-rubric-head">
+            <span class="eval-rubric-name">${esc(criterion)}</span>
+            <span class="eval-rubric-score ${st}">${score}/9</span>
+          </div>
+          <div class="eval-rubric-body">${esc(fb) || '-'}</div>
+        </div>`;
+    });
+
+    const card = document.createElement('div');
+    card.className = 'rubric-card';
+    card.style.animationDelay = (i * 0.1) + 's';
+    card.innerHTML = `
+      <div class="rubric-header">
+        <span class="rubric-name">${esc(ev.label)}</span>
+        <span class="rubric-score-badge ${tier}">${total} / ${max}</span>
+      </div>
+      <div class="eval-rubrics">${rubricsHtml}</div>
+    `;
+    container.appendChild(card);
+  });
+
+  $('#feedback-card').style.display = 'block';
+  $('#feedback-card').style.animation = 'fadeUp .5s ease';
+}
+
+// ── Render morpheme analysis ─────────────────────────
+function renderMorphemes(sentences){
+  const section = $('#morph-section');
+  const display = $('#morph-display');
+  const info = $('#morph-sent-info');
+
+  if(!sentences || sentences.length === 0){
+    section.style.display = 'none';
+    return;
+  }
+
+  // Clear previous highlight state
+  clearFeatureHighlight();
+  allMorphEls = [];
+  let globalIdx = 0;
+
+  section.style.display = 'block';
+  info.textContent = sentences.length + '개 문장 감지';
+
+  updateEssayStats(sentences);
+  display.innerHTML = '';
+  sentences.forEach((sent, si) => {
+    const sentDiv = document.createElement('div');
+    sentDiv.className = 'morph-sent';
+
+    const badge = document.createElement('span');
+    badge.className = 'morph-sent-num';
+    badge.textContent = (si+1);
+    sentDiv.appendChild(badge);
+
+    sent.words.forEach((word, wi) => {
+      const wordSpan = document.createElement('span');
+      wordSpan.className = 'morph-word';
+
+      word.morphemes.forEach(m => {
+        const mSpan = document.createElement('span');
+        mSpan.className = 'morph ' + posCat(m.tag);
+        mSpan.title = m.tag + ': ' + m.feature;
+        mSpan.dataset.feature = m.feature;
+        mSpan.dataset.morphSeq = globalIdx;
+        mSpan.innerHTML = esc(m.surface) + '<sub>' + esc(m.feature) + '</sub>';
+        wordSpan.appendChild(mSpan);
+        allMorphEls.push(mSpan);
+        globalIdx++;
+      });
+
+      sentDiv.appendChild(wordSpan);
+
+      if(wi < sent.words.length - 1){
+        sentDiv.appendChild(document.createTextNode(' '));
+      }
+    });
+
+    display.appendChild(sentDiv);
+  });
+}
+
+// ── Feature highlight logic ──────────────────────────
+function highlightFeature(featureName){
+  const display = $('#morph-display');
+  const section = $('#morph-section');
+
+  if(!allMorphEls.length || !section || section.style.display === 'none') return;
+
+  // Toggle off if same feature clicked
+  if(activeFeat === featureName){
+    clearFeatureHighlight();
+    return;
+  }
+
+  // Clear previous
+  clearFeatureHighlight();
+  activeFeat = featureName;
+
+  if(featureName === '문장수'){
+    // Kiwi 문장 분리 결과로 각 문장 단위를 강조
+    const sentDivs = display.querySelectorAll('.morph-sent');
+    sentDivs.forEach(el => el.classList.add('sent-hl'));
+    showFeatBadge(featureName, sentDivs.length);
+    section.scrollIntoView({behavior:'smooth', block:'nearest'});
+    return;
+  }
+
+  if(featureName.includes('+')){
+    // N-gram feature: find consecutive morphemes matching the pattern
+    const parts = featureName.split('+').map(s => s.trim());
+    for(let i = 0; i <= allMorphEls.length - parts.length; i++){
+      let match = true;
+      for(let j = 0; j < parts.length; j++){
+        if(allMorphEls[i+j].dataset.feature !== parts[j]){
+          match = false;
+          break;
+        }
+      }
+      if(match){
+        for(let j = 0; j < parts.length; j++){
+          allMorphEls[i+j].classList.add('feat-hl');
+        }
+      }
+    }
+  } else {
+    // Simple feature: match by feature name
+    allMorphEls.forEach(el => {
+      if(el.dataset.feature === featureName){
+        el.classList.add('feat-hl');
+      }
+    });
+  }
+
+  display.classList.add('feat-active');
+
+  const hlCount = display.querySelectorAll('.feat-hl').length;
+  showFeatBadge(featureName, hlCount);
+
+  // Scroll morph section into view
+  section.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function clearFeatureHighlight(){
+  activeFeat = null;
+  const display = $('#morph-display');
+  if(display){
+    display.classList.remove('feat-active');
+    display.querySelectorAll('.feat-hl').forEach(el => el.classList.remove('feat-hl'));
+    display.querySelectorAll('.sent-hl').forEach(el => el.classList.remove('sent-hl'));
+  }
+  removeFeatBadge();
+}
+
+function showFeatBadge(name, count){
+  removeFeatBadge();
+  const header = $('.morph-header');
+  if(!header) return;
+  const badge = document.createElement('span');
+  badge.className = 'feat-badge';
+  badge.id = 'feat-badge';
+  badge.innerHTML = esc(name) + ' <span style="opacity:.6">(' + count + '개)</span> <span class="close-x">\u2715</span>';
+  badge.onclick = () => clearFeatureHighlight();
+  header.appendChild(badge);
+}
+
+function removeFeatBadge(){
+  const existing = document.getElementById('feat-badge');
+  if(existing) existing.remove();
+}
+
+function posCat(pos){
+  if(!pos) return 'cat-other';
+  const c = pos.charAt(0);
+  if(c==='N') return 'cat-noun';
+  if(c==='V') return 'cat-verb';
+  if(c==='J') return 'cat-josa';
+  if(c==='M') return 'cat-mod';
+  if(c==='E') return 'cat-end';
+  if(c==='X') return 'cat-affix';
+  if(c==='S' || c==='I') return 'cat-punct';
+  return 'cat-other';
+}
+
+function esc(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ── Essay Statistics ──────────────────────────────────
+function updateEssayStats(sentences){
+  const panel = $('#essay-stats-panel');
+  if(!sentences || sentences.length === 0){
+    panel.style.display = 'none';
+    return;
+  }
+  let totalWords = 0;
+  const allSurfaces = [];
+  sentences.forEach(sent => {
+    totalWords += sent.words.length;
+    sent.words.forEach(word => {
+      word.morphemes.forEach(m => {
+        if(m.surface && m.surface.trim()) allSurfaces.push(m.surface);
+      });
+    });
+  });
+  const sentCount = sentences.length;
+  const avgLen = sentCount > 0 ? (totalWords / sentCount).toFixed(1) : '-';
+  const uniqueSet = new Set(allSurfaces);
+  const ttr = allSurfaces.length > 0
+    ? (uniqueSet.size / allSurfaces.length * 100).toFixed(1) + '%'
+    : '-';
+  $('#stat-words').textContent = totalWords;
+  $('#stat-sents').textContent = sentCount;
+  $('#stat-avg-len').textContent = avgLen;
+  $('#stat-ttr').textContent = ttr;
+  panel.style.display = 'block';
+}
+
+// ── History ───────────────────────────────────────────
+function saveToHistory(questionIdx, question, scores){
+  const history = getHistory();
+  const total = scores.reduce((a,b) => a+b, 0);
+  history.unshift({
+    id: Date.now(),
+    timestamp: new Date().toISOString(),
+    question,
+    questionIdx,
+    scores,
+    total,
+  });
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 10)));
+  } catch(e){ console.warn('History save failed', e); }
+  renderHistory();
+}
+
+function getHistory(){
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function renderHistory(){
+  const history = getHistory();
+  const card = $('#history-card');
+  const list = $('#history-list');
+  if(!list) return;
+  if(history.length === 0){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  list.innerHTML = '';
+  history.forEach(entry => {
+    const max = 72;
+    const pct = entry.total / max;
+    const tier = pct >= 0.77 ? 'high' : pct >= 0.44 ? 'mid' : 'low';
+    const d = new Date(entry.timestamp);
+    const dateStr = d.toLocaleString('ko-KR', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerHTML = `
+      <div class="history-item-main">
+        <div class="history-meta">${dateStr}</div>
+        <div class="history-question">${esc(entry.question.slice(0,45))}${entry.question.length>45?'…':''}</div>
+      </div>
+      <span class="history-score-badge ${tier}">${entry.total} / ${max}</span>
+    `;
+    item.addEventListener('click', () => {
+      if(entry.questionIdx >= 0 && questionsData[entry.questionIdx]){
+        questionSelect.value = entry.questionIdx;
+        questionSelect.dispatchEvent(new Event('change'));
+      }
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+    list.appendChild(item);
+  });
+}
+
+function clearHistory(){
+  if(!confirm('채점 이력을 모두 삭제하시겠습니까?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+}
+
+// ── Download results ──────────────────────────────────
+function downloadResults(){
+  if(!lastAnalysisData) return;
+  const { question, criteria, scores, validCount, totalCount, evaluators } = lastAnalysisData;
+  const total = scores.reduce((a,b) => a+b, 0);
+  const max = criteria.length * 9;
+
+  let r = '═══════════════════════════════════════\n';
+  r += '         AI 작문 분석 결과 리포트\n';
+  r += '═══════════════════════════════════════\n\n';
+  r += `분석 일시: ${new Date().toLocaleString('ko-KR')}\n`;
+  r += `앙상블 유효 응답: ${validCount} / ${totalCount}\n\n`;
+  r += '── 에세이 질문 ─────────────────────────\n';
+  r += question + '\n\n';
+  r += '── 에세이 내용 ─────────────────────────\n';
+  r += essayInput.value + '\n\n';
+  r += '── 항목별 점수 ─────────────────────────\n';
+  criteria.forEach((c, i) => {
+    const s = scores[i];
+    const filled = '■'.repeat(s) + '□'.repeat(9 - s);
+    r += `${c}  ${filled}  ${s}/9\n`;
+  });
+  r += `\n종합 점수: ${total} / ${max}\n`;
+
+  if(evaluators && evaluators.length > 0){
+    r += '\n── 상세 피드백 ─────────────────────────\n';
+    evaluators.forEach((ev, i) => {
+      const evTotal = ev.scores.reduce((a,b) => a+b, 0);
+      r += `\n[평가자 ${i+1}] 총점: ${evTotal}/${max}\n`;
+      criteria.forEach((c, ci) => {
+        r += `  ${c}: ${ev.scores[ci]}/9\n`;
+        if(ev.rubrics && ev.rubrics[ci]){
+          r += `    → ${ev.rubrics[ci].replace(/\n/g,' ')}\n`;
+        }
+      });
+    });
+  }
+  r += '\n═══════════════════════════════════════\n';
+  r += 'Generated by AI 작문 분석 시스템\n';
+
+  const blob = new Blob([r], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `essay_analysis_${new Date().toISOString().slice(0,10)}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── Score probability heatmap ─────────────────────────
+function renderScoreProbs(probs) {
+  const section = $('#score-probs-section');
+  section.style.display = 'block';
+
+  let html = `<table class="probs-table"><thead><tr>
+    <th class="probs-th-label"></th>`;
+  for (let s = 1; s <= 9; s++) html += `<th>${s}</th>`;
+  html += `</tr></thead><tbody>`;
+
+  CRITERIA.forEach((name, i) => {
+    const dist = probs[i] || Array(9).fill(0);
+    const maxP = Math.max(...dist);
+    const argmaxIdx = dist.indexOf(maxP);
+
+    html += `<tr><td class="probs-label">${esc(name)}</td>`;
+    dist.forEach((p, j) => {
+      const score = j + 1;
+      const intensity = maxP > 0 ? p / maxP : 0;
+      const alpha = (0.06 + intensity * 0.78).toFixed(2);
+      const textAlpha = (0.25 + intensity * 0.75).toFixed(2);
+      let bg, color;
+      if (score >= 7) {
+        bg = `rgba(16,185,129,${alpha})`;
+        color = `rgba(110,231,183,${textAlpha})`;
+      } else if (score >= 4) {
+        bg = `rgba(245,158,11,${alpha})`;
+        color = `rgba(252,211,77,${textAlpha})`;
+      } else {
+        bg = `rgba(239,68,68,${alpha})`;
+        color = `rgba(252,165,165,${textAlpha})`;
+      }
+      const pct = p > 0 ? (p * 100).toFixed(3) + '%' : '';
+      const title = `${name} — 점수 ${score}: ${(p * 100).toFixed(1)}%`;
+      html += `<td class="probs-cell${j === argmaxIdx ? ' argmax' : ''}"
+        style="background:${bg};color:${color}"
+        title="${esc(title)}">${pct}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  $('#probs-heatmap').innerHTML = html;
+}
+
+// ── Distribution chart ────────────────────────────────
+function buildScoreFreq(dist) {
+  const freq = Array(9).fill(0);
+  (dist || []).forEach(s => { if (s >= 1 && s <= 9) freq[s - 1]++; });
+  return freq;
+}
+
+function showDistribution(idx, criterionName, dist) {
+  // Toggle off on same criterion
+  if (selectedCriterionIdx === idx) { hideDistribution(); return; }
+  selectedCriterionIdx = idx;
+
+  document.querySelectorAll('.score-item').forEach((el, i) =>
+    el.classList.toggle('selected', i === idx)
+  );
+
+  const section = $('#dist-section');
+  section.style.display = 'block';
+  $('#dist-criterion-name').textContent = criterionName;
+
+  const freq = buildScoreFreq(dist);
+  const total = freq.reduce((a, b) => a + b, 0);
+
+  const ctx = $('#dist-chart').getContext('2d');
+  if (distChart) distChart.destroy();
+
+  distChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['1','2','3','4','5','6','7','8','9'],
+      datasets: [{
+        label: '빈도',
+        data: freq,
+        backgroundColor: freq.map((_, i) => {
+          const sc = i + 1;
+          return sc >= 7 ? 'rgba(16,185,129,.7)' : sc >= 4 ? 'rgba(245,158,11,.7)' : 'rgba(239,68,68,.7)';
+        }),
+        borderColor: freq.map((_, i) => {
+          const sc = i + 1;
+          return sc >= 7 ? '#10b981' : sc >= 4 ? '#f59e0b' : '#ef4444';
+        }),
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1, color: '#64748b', font: { size: 10 },
+            callback: v => Number.isInteger(v) ? v : ''
+          },
+          grid: { color: 'rgba(51,65,85,.3)' },
+          title: { display: true, text: '빈도', color: '#64748b', font: { size: 10 } }
+        },
+        x: {
+          ticks: { color: '#94a3b8', font: { size: 12 } },
+          grid: { display: false },
+          title: { display: true, text: '점수', color: '#64748b', font: { size: 10 } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          titleColor: '#e2e8f0',
+          bodyColor: '#e2e8f0',
+          borderColor: '#334155',
+          borderWidth: 1,
+          callbacks: {
+            title: items => `점수 ${items[0].label}점`,
+            label: item => `${item.raw}회 (${total > 0 ? (item.raw / total * 100).toFixed(1) : 0}%)`
+          }
+        }
+      },
+      animation: { duration: 400 }
+    }
+  });
+}
+
+function hideDistribution() {
+  selectedCriterionIdx = null;
+  const section = $('#dist-section');
+  if (section) section.style.display = 'none';
+  document.querySelectorAll('.score-item').forEach(el => el.classList.remove('selected'));
+  if (distChart) { distChart.destroy(); distChart = null; }
+}
+
+// ── Keyword Highlight ─────────────────────────────────
+function parseKeywords(kwStr) {
+  return (kwStr || '').split(',').map(k => {
+    k = k.trim();
+    const m = k.match(/^(.+?)\((.+?)\)$/);
+    return m ? { main: m[1].trim(), alt: m[2].trim() } : { main: k, alt: null };
+  }).filter(k => k.main);
+}
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function highlightKeywordsInText(text, keywords) {
+  // Build term → color map (main + alt share the same color index)
+  const termColorMap = {};
+  keywords.forEach((kw, i) => {
+    const c = KW_COLORS[i % KW_COLORS.length];
+    if (kw.main) termColorMap[kw.main] = c;
+    if (kw.alt)  termColorMap[kw.alt]  = c;
+  });
+  const allTerms = Object.keys(termColorMap);
+  if (!allTerms.length) return esc(text);
+  const regex = new RegExp('(' + allTerms.map(escapeRegex).join('|') + ')', 'g');
+  return text.split(regex).map(part => {
+    const c = termColorMap[part];
+    return c
+      ? `<mark class="kw-mark" style="background:${c.bg};color:${c.text}">${esc(part)}</mark>`
+      : esc(part);
+  }).join('');
+}
+
+function updateKeywordHighlight() {
+  const essay = essayInput.value;
+  const qIdx = +questionSelect.value;
+  const section = $('#kw-highlight-section');
+  if (isNaN(qIdx) || qIdx < 0 || !questionsData[qIdx] || !essay.trim()) {
+    section.style.display = 'none';
+    return;
+  }
+  const keywords = parseKeywords(questionsData[qIdx].keywords);
+  section.style.display = 'block';
+
+  // Keyword chips: found → keyword color, missing → red
+  $('#kw-status-row').innerHTML = keywords.map((kw, i) => {
+    const found = essay.includes(kw.main) || (kw.alt && essay.includes(kw.alt));
+    const label = kw.alt ? `${kw.main}(${kw.alt})` : kw.main;
+    if (found) {
+      const c = KW_COLORS[i % KW_COLORS.length];
+      return `<span class="kw-chip" style="background:${c.chipBg};color:${c.text};border:1px solid ${c.chipBorder}">✓ ${esc(label)}</span>`;
+    }
+    return `<span class="kw-chip missing">✗ ${esc(label)}</span>`;
+  }).join('');
+
+  // Highlighted preview
+  $('#kw-essay-preview').innerHTML = highlightKeywordsInText(essay, keywords);
+}
+
+// ── Init ──────────────────────────────────────────────
+renderHistory();
+</script>
+</body>
+</html>

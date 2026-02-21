@@ -1,0 +1,15 @@
+# Korean Essay Rater - Runtime Dependencies
+# Python 3.10+
+#
+# vLLM manages its own torch/CUDA build.
+# Install vLLM first following the official guide for your CUDA version:
+#   https://docs.vllm.ai/en/latest/getting_started/installation.html
+#
+# Then install the remaining packages:
+#   pip install -r requirements.txt
+
+vllm==0.15.1
+transformers==4.57.6
+fastapi==0.128.8
+uvicorn==0.40.0
+kiwipiepy==0.22.2
