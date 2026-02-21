@@ -31,7 +31,6 @@ Thumbs.db
 *.log
 
 # Large model files (use Git LFS or Hugging Face Hub instead)
-*.safetensors
 *.bin
 *.pt
 *.pth
