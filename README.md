@@ -30,7 +30,7 @@ FastAPI (app.py)
 
 - Python 3.10+
 - CUDA 지원 GPU (vLLM 실행에 필요)
-- Llama 계열 기반 모델 (별도 다운로드 필요)
+- base model : meta-llama/Llama-3.1-8B-Instruct (별도 다운로드 필요)
 
 ## 설치
 
@@ -52,6 +52,8 @@ pip install -r requirements.txt
 ```python
 # app.py
 MODEL_PATH = "/your/path/to/llama"   # ← 변경
+혹은
+MODEL_PATH = "meta-llama/Llama-3.1-8B-Instruct"
 ```
 
 ## 실행
