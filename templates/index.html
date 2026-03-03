@@ -138,122 +138,6 @@ select option{background:var(--surface2);color:var(--text)}
 .analysis-badge.loading{opacity:.6;animation:badgePulse 1s infinite}
 @keyframes badgePulse{0%,100%{opacity:.6}50%{opacity:1}}
 
-/* ── Morpheme display ─────────────────────────────── */
-.morph-section{
-  margin-top:1rem;display:none;
-  animation:fadeUp .3s ease;
-}
-.morph-header{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:.5rem;flex-wrap:wrap;gap:.4rem;
-}
-.morph-header .section-label{font-size:.82rem;color:var(--text3)}
-.morph-sent-info{
-  font-size:.78rem;color:var(--accent2);
-  background:rgba(99,102,241,.08);
-  padding:.15rem .5rem;border-radius:4px;
-  border:1px solid rgba(99,102,241,.15);
-}
-.morph-legend{
-  display:flex;flex-wrap:wrap;gap:.5rem;
-  margin-bottom:.5rem;
-}
-.legend-item{
-  display:inline-flex;align-items:center;gap:.25rem;
-  font-size:.72rem;color:var(--text3);
-}
-.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-.morph-display{
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:.8rem 1rem;
-  max-height:180px;overflow-y:auto;
-  line-height:2.2;
-}
-.morph-display::-webkit-scrollbar{width:5px}
-.morph-display::-webkit-scrollbar-track{background:transparent}
-.morph-display::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.morph{
-  display:inline-block;
-  padding:1px 5px;margin:1px 1px;
-  border-radius:4px;
-  font-size:.84rem;
-  cursor:default;
-  border-bottom:2px solid transparent;
-  transition:opacity .15s;
-  position:relative;
-}
-.morph:hover{opacity:.75}
-.morph sub{
-  font-size:.6rem;color:var(--text3);
-  margin-left:2px;vertical-align:baseline;
-  opacity:.7;
-}
-.cat-noun{background:rgba(59,130,246,.12);border-bottom-color:#3b82f6;color:#93c5fd}
-.cat-verb{background:rgba(16,185,129,.12);border-bottom-color:#10b981;color:#6ee7b7}
-.cat-josa{background:rgba(245,158,11,.08);border-bottom-color:#f59e0b;color:#fcd34d}
-.cat-mod{background:rgba(139,92,246,.1);border-bottom-color:#8b5cf6;color:#c4b5fd}
-.cat-end{background:rgba(236,72,153,.08);border-bottom-color:#ec4899;color:#f9a8d4}
-.cat-punct{background:rgba(148,163,184,.08);border-bottom-color:#64748b;color:#94a3b8}
-.cat-affix{background:rgba(20,184,166,.08);border-bottom-color:#14b8a6;color:#5eead4}
-.cat-other{background:rgba(148,163,184,.05);border-bottom-color:#475569;color:#94a3b8}
-.morph-sent{
-  display:flex;align-items:flex-start;flex-wrap:wrap;gap:2px;
-  padding:.4rem 0;
-  border-bottom:1px solid rgba(30,41,59,.5);
-}
-.morph-sent:last-child{border-bottom:none}
-.morph-sent-num{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:20px;height:20px;border-radius:50%;
-  background:rgba(99,102,241,.15);color:var(--accent2);
-  font-size:.65rem;font-weight:700;flex-shrink:0;
-  margin-right:.3rem;margin-top:2px;
-}
-.morph-word{
-  display:inline-flex;align-items:baseline;
-  background:rgba(255,255,255,.02);
-  border-radius:4px;padding:0 1px;
-}
-
-/* ── Feature highlight ─────────────────────────────── */
-.morph-display.feat-active .morph{opacity:.2;transition:opacity .2s}
-.morph-display.feat-active .morph.feat-hl{
-  opacity:1;
-  outline:2px solid var(--accent);
-  outline-offset:1px;
-  box-shadow:0 0 8px var(--accent-glow);
-  z-index:1;
-}
-.feat-badge{
-  display:inline-flex;align-items:center;gap:.4rem;
-  padding:.2rem .65rem;border-radius:6px;
-  background:rgba(99,102,241,.15);color:var(--accent2);
-  border:1px solid rgba(99,102,241,.3);
-  font-size:.78rem;cursor:pointer;
-  animation:fadeUp .25s ease;
-  white-space:nowrap;
-}
-.feat-badge:hover{background:rgba(99,102,241,.25)}
-.feat-badge .close-x{font-size:.7rem;opacity:.6;margin-left:.1rem}
-.morph-sent.sent-hl{
-  background:rgba(99,102,241,.06);
-  border-color:rgba(99,102,241,.3);
-  border-radius:6px;
-  padding:.4rem .5rem;
-}
-.morph-sent.sent-hl .morph-sent-num{
-  background:rgba(99,102,241,.45);
-  box-shadow:0 0 10px var(--accent-glow);
-  transform:scale(1.15);
-  transition:all .3s;
-}
-.feat-clickable-hint{
-  font-size:.72rem;color:var(--text3);opacity:.7;
-  margin-left:.4rem;font-weight:400;
-}
-
 /* ── Button ────────────────────────────────────────── */
 .btn-analyze{
   width:100%;padding:1rem;
@@ -315,20 +199,142 @@ select option{background:var(--surface2);color:var(--text)}
   50%{box-shadow:0 0 20px var(--accent-glow)}
 }
 
-/* ── Features chart ────────────────────────────────── */
-.features-section{margin-top:1rem;display:none}
-.features-section .section-label{
+/* ── Features report section ──────────────────────── */
+.features-report{margin-top:1rem;display:none}
+.features-report .section-label{
   font-size:.82rem;color:var(--text3);margin-bottom:.6rem;
 }
+
+/* Feature chart */
 .features-chart-wrap{
   background:var(--surface2);border:1px solid var(--border);
   border-radius:8px;padding:1rem;
   max-height:400px;overflow-y:auto;
+  margin-bottom:1rem;
 }
 .features-chart-wrap::-webkit-scrollbar{width:5px}
 .features-chart-wrap::-webkit-scrollbar-track{background:transparent}
 .features-chart-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .features-chart-wrap canvas{width:100%!important}
+
+/* Grammar report */
+.grammar-box{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:.8rem 1rem;
+  font-size:.85rem;line-height:1.8;color:var(--text2);
+  margin-bottom:1rem;
+}
+.grammar-box .error-item{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.2rem 0;
+}
+.grammar-box .error-type{
+  font-size:.72rem;font-weight:700;
+  padding:.1rem .4rem;border-radius:4px;
+  flex-shrink:0;
+}
+.grammar-box .error-type.spelling{
+  background:rgba(239,68,68,.15);color:#fca5a5;
+  border:1px solid rgba(239,68,68,.3);
+}
+.grammar-box .error-type.spacing{
+  background:rgba(245,158,11,.15);color:#fcd34d;
+  border:1px solid rgba(245,158,11,.3);
+}
+.grammar-box .error-arrow{color:var(--accent2);font-weight:700}
+
+/* Morpheme report */
+.morph-report{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:.8rem 1rem;
+  max-height:300px;overflow-y:auto;
+  line-height:2.2;
+}
+.morph-report::-webkit-scrollbar{width:5px}
+.morph-report::-webkit-scrollbar-track{background:transparent}
+.morph-report::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.morph{
+  display:inline-block;
+  padding:1px 5px;margin:1px 1px;
+  border-radius:4px;
+  font-size:.84rem;
+  cursor:default;
+  border-bottom:2px solid transparent;
+  transition:opacity .15s;
+  position:relative;
+}
+.morph:hover{opacity:.75}
+.morph sub{
+  font-size:.6rem;color:var(--text3);
+  margin-left:2px;vertical-align:baseline;
+  opacity:.7;
+}
+.cat-noun{background:rgba(59,130,246,.12);border-bottom-color:#3b82f6;color:#93c5fd}
+.cat-verb{background:rgba(16,185,129,.12);border-bottom-color:#10b981;color:#6ee7b7}
+.cat-josa{background:rgba(245,158,11,.08);border-bottom-color:#f59e0b;color:#fcd34d}
+.cat-mod{background:rgba(139,92,246,.1);border-bottom-color:#8b5cf6;color:#c4b5fd}
+.cat-end{background:rgba(236,72,153,.08);border-bottom-color:#ec4899;color:#f9a8d4}
+.cat-punct{background:rgba(148,163,184,.08);border-bottom-color:#64748b;color:#94a3b8}
+.cat-affix{background:rgba(20,184,166,.08);border-bottom-color:#14b8a6;color:#5eead4}
+.cat-other{background:rgba(148,163,184,.05);border-bottom-color:#475569;color:#94a3b8}
+.morph-sent{
+  display:flex;align-items:flex-start;flex-wrap:wrap;gap:2px;
+  padding:.4rem 0;
+  border-bottom:1px solid rgba(30,41,59,.5);
+}
+.morph-sent:last-child{border-bottom:none}
+.morph-sent-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(99,102,241,.15);color:var(--accent2);
+  font-size:.65rem;font-weight:700;flex-shrink:0;
+  margin-right:.3rem;margin-top:2px;
+}
+.morph-word{
+  display:inline-flex;align-items:baseline;
+  background:rgba(255,255,255,.02);
+  border-radius:4px;padding:0 1px;
+}
+.morph-legend{
+  display:flex;flex-wrap:wrap;gap:.5rem;
+  margin-bottom:.5rem;
+}
+.legend-item{
+  display:inline-flex;align-items:center;gap:.25rem;
+  font-size:.72rem;color:var(--text3);
+}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* Feature highlight */
+.morph-report.feat-active .morph{opacity:.2;transition:opacity .2s}
+.morph-report.feat-active .morph.feat-hl{
+  opacity:1;
+  outline:2px solid var(--accent);
+  outline-offset:1px;
+  box-shadow:0 0 8px var(--accent-glow);
+  z-index:1;
+}
+.feat-badge{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.2rem .65rem;border-radius:6px;
+  background:rgba(99,102,241,.15);color:var(--accent2);
+  border:1px solid rgba(99,102,241,.3);
+  font-size:.78rem;cursor:pointer;
+  animation:fadeUp .25s ease;
+  white-space:nowrap;
+}
+.feat-badge:hover{background:rgba(99,102,241,.25)}
+.feat-badge .close-x{font-size:.7rem;opacity:.6;margin-left:.1rem}
+.morph-sent.sent-hl{
+  background:rgba(99,102,241,.06);
+  border-color:rgba(99,102,241,.3);
+  border-radius:6px;
+  padding:.4rem .5rem;
+}
+.feat-clickable-hint{
+  font-size:.72rem;color:var(--text3);opacity:.7;
+  margin-left:.4rem;font-weight:400;
+}
 
 /* ── Score section ─────────────────────────────────── */
 .score-grid{
@@ -400,223 +406,104 @@ select option{background:var(--surface2);color:var(--text)}
   transition:width .6s cubic-bezier(.22,1,.36,1);
 }
 
-/* ── Streaming area ────────────────────────────────── */
-.stream-box{
-  background:var(--surface2);
+/* ── Score Probs ───────────────────────────────────── */
+.score-probs-section{display:none;margin-top:1.2rem}
+.probs-table{
+  width:100%;border-collapse:collapse;
+  font-size:.78rem;
+}
+.probs-table th,.probs-table td{
+  padding:.35rem .4rem;text-align:center;
   border:1px solid var(--border);
-  border-radius:8px;
-  padding:1rem 1.2rem;
-  min-height:60px;
-  font-size:.88rem;line-height:1.8;
-  white-space:pre-wrap;
-  color:var(--text3);
-  max-height:200px;overflow-y:auto;
 }
-.stream-box::-webkit-scrollbar{width:5px}
-.stream-box::-webkit-scrollbar-track{background:transparent}
-.stream-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.cursor-blink::after{
-  content:'|';color:var(--accent);animation:blink .8s step-end infinite;
+.probs-table thead th{
+  background:var(--surface2);color:var(--text3);
+  font-weight:600;
 }
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.probs-th-label{text-align:left;width:130px}
+.probs-th-exp{background:rgba(99,102,241,.15)!important;color:#a5b4fc!important;min-width:52px}
+.probs-exp{
+  text-align:center;font-weight:700;font-size:.82rem;
+  color:#a5b4fc;background:rgba(99,102,241,.08);
+  border-left:2px solid rgba(99,102,241,.3)!important;
+}
+.probs-total{font-size:.88rem;color:#c4b5fd}
+.probs-total-row{border-top:2px solid var(--border)!important}
+.probs-label{
+  text-align:left!important;color:var(--text2);
+  font-size:.78rem;padding-left:.5rem!important;
+}
+.probs-cell{font-family:'SF Mono',monospace;font-size:.72rem}
+.probs-cell.argmax{font-weight:800}
 
-/* ── Evaluator feedback cards ─────────────────────── */
+/* ── Distribution ──────────────────────────────────── */
+.dist-section{
+  display:none;margin-top:1rem;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:1rem;
+}
+.dist-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:.5rem;
+}
+.dist-criterion-label{font-size:.85rem;color:var(--text3)}
+.dist-criterion-name{font-size:.95rem;font-weight:700;color:var(--accent2)}
+.dist-close{
+  background:none;border:1px solid var(--border);
+  color:var(--text3);font-size:.78rem;
+  padding:.2rem .5rem;border-radius:4px;cursor:pointer;
+}
+.dist-close:hover{border-color:var(--accent);color:var(--accent2)}
+.dist-wrap{height:200px}
 
+/* ── Evaluator cards ───────────────────────────────── */
 .rubric-card{
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:1.1rem 1.2rem;
-  transition:border-color .3s,transform .2s;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:1.2rem;
   animation:fadeUp .4s ease both;
 }
-.rubric-card:hover{
-  border-color:rgba(99,102,241,.3);
-  transform:translateY(-2px);
-}
 .rubric-header{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:.7rem;padding-bottom:.6rem;
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:.8rem;padding-bottom:.6rem;
   border-bottom:1px solid var(--border);
 }
-.rubric-name{
-  font-size:.88rem;font-weight:700;color:var(--text);
-}
+.rubric-name{font-weight:700;font-size:.95rem;color:var(--text)}
 .rubric-score-badge{
-  display:inline-flex;align-items:center;justify-content:center;
-  min-width:52px;padding:.2rem .6rem;
-  border-radius:6px;font-size:.82rem;font-weight:700;
+  font-size:.82rem;font-weight:700;
+  padding:.2rem .6rem;border-radius:6px;
 }
-.rubric-score-badge.high{
-  background:rgba(16,185,129,.12);color:var(--green);
-  border:1px solid rgba(16,185,129,.25);
-}
-.rubric-score-badge.mid{
-  background:rgba(245,158,11,.1);color:var(--amber);
-  border:1px solid rgba(245,158,11,.25);
-}
-.rubric-score-badge.low{
-  background:rgba(239,68,68,.1);color:var(--red);
-  border:1px solid rgba(239,68,68,.25);
-}
-.rubric-body{
-  font-size:.85rem;line-height:1.8;color:var(--text2);
-}
-
-/* ── Evaluator rubric sub-items ───────────────────── */
-.eval-rubrics{
-  display:grid;grid-template-columns:1fr 1fr;gap:.6rem;
-}
-@media(max-width:768px){.eval-rubrics{grid-template-columns:1fr}}
+.rubric-score-badge.high{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.3)}
+.rubric-score-badge.mid{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.3)}
+.rubric-score-badge.low{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+.eval-rubrics{display:flex;flex-direction:column;gap:.5rem}
 .eval-rubric-item{
-  padding:.6rem .8rem;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:8px;
-  transition:border-color .2s;
+  padding:.5rem .6rem;border-radius:6px;
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(30,41,59,.5);
 }
-.eval-rubric-item:hover{border-color:rgba(99,102,241,.2)}
 .eval-rubric-head{
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;justify-content:space-between;align-items:center;
   margin-bottom:.3rem;
 }
-.eval-rubric-name{
-  font-size:.8rem;font-weight:600;color:var(--text2);
-}
+.eval-rubric-name{font-size:.82rem;color:var(--text2);font-weight:600}
 .eval-rubric-score{
   font-size:.75rem;font-weight:700;
   padding:.1rem .4rem;border-radius:4px;
 }
-.eval-rubric-score.high{background:rgba(16,185,129,.12);color:var(--green)}
-.eval-rubric-score.mid{background:rgba(245,158,11,.1);color:var(--amber)}
-.eval-rubric-score.low{background:rgba(239,68,68,.1);color:var(--red)}
-.eval-rubric-body{
-  font-size:.78rem;line-height:1.7;color:var(--text3);
-}
+.eval-rubric-score.high{color:#6ee7b7}
+.eval-rubric-score.mid{color:#fcd34d}
+.eval-rubric-score.low{color:#fca5a5}
+.eval-rubric-body{font-size:.82rem;color:var(--text3);line-height:1.6}
 
-/* ── Footer ────────────────────────────────────────── */
-footer{
-  text-align:center;padding:2rem 0 1rem;
-  color:var(--text3);font-size:.8rem;
-}
-
-/* ── Essay Statistics Panel ─────────────────────────── */
-.essay-stats-panel{
-  margin-top:1rem;padding:.9rem 1rem;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;
-}
-.stats-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  gap:.8rem;text-align:center;
-}
-@media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
-.stat-item{display:flex;flex-direction:column;gap:.25rem;align-items:center}
-.stat-val{font-size:1.25rem;font-weight:800;color:var(--accent2)}
-.stat-label{font-size:.72rem;color:var(--text3)}
-
-/* ── Score range label ──────────────────────────────── */
-.score-range-label{
-  font-size:.72rem;color:var(--text3);white-space:nowrap;
-  min-width:38px;text-align:center;flex-shrink:0;
-}
-
-/* ── Download button ────────────────────────────────── */
-.btn-download{
-  width:100%;margin-top:1rem;padding:.65rem 1rem;
-  background:rgba(99,102,241,.12);color:var(--accent2);
-  border:1px solid rgba(99,102,241,.25);border-radius:8px;
-  font-size:.88rem;font-weight:600;cursor:pointer;
-  transition:background .2s,border-color .2s;
-  letter-spacing:.02em;font-family:inherit;
-}
-.btn-download:hover{background:rgba(99,102,241,.22);border-color:rgba(99,102,241,.4)}
-
-/* ── History section ────────────────────────────────── */
-.history-items{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem}
-.history-item{
-  display:flex;align-items:center;justify-content:space-between;gap:1rem;
-  padding:.65rem .9rem;background:var(--surface2);
-  border:1px solid var(--border);border-radius:8px;
-  cursor:pointer;transition:border-color .2s,background .2s;
-}
-.history-item:hover{border-color:rgba(99,102,241,.35);background:rgba(99,102,241,.04)}
-.history-item-main{flex:1;min-width:0}
-.history-meta{font-size:.7rem;color:var(--text3);margin-bottom:.12rem}
-.history-question{font-size:.83rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.history-score-badge{
-  flex-shrink:0;padding:.18rem .55rem;border-radius:6px;font-size:.8rem;font-weight:700;
-}
-.history-score-badge.high{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25)}
-.history-score-badge.mid{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
-.history-score-badge.low{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25)}
-.history-header-row{display:flex;align-items:center}
-.history-clear-btn{
-  margin-left:auto;background:none;border:none;color:var(--text3);
-  cursor:pointer;font-size:.75rem;padding:.1rem .3rem;
-  opacity:.6;transition:opacity .2s,color .2s;font-family:inherit;
-}
-.history-clear-btn:hover{opacity:1;color:var(--red)}
-
-/* ── Score probability heatmap ──────────────────────── */
-.score-probs-section{margin-top:1.2rem;display:none;animation:fadeUp .3s ease}
-.probs-table{
-  width:100%;border-collapse:separate;border-spacing:3px;font-size:.78rem;
-}
-.probs-table th{
-  color:var(--text3);padding:.25rem .3rem;text-align:center;
-  font-weight:600;font-size:.72rem;
-}
-.probs-th-label{width:126px;text-align:right!important}
-.probs-label{
-  color:var(--text2);text-align:right;padding-right:.55rem;
-  white-space:nowrap;font-size:.8rem;vertical-align:middle;
-}
-.probs-cell{
-  text-align:center;border-radius:4px;padding:.28rem .2rem;
-  min-width:50px;cursor:default;
-  font-size:.67rem;font-weight:700;line-height:1.4;
-  transition:background .5s;
-  white-space:nowrap;
-}
-.probs-cell.argmax{outline:2px solid rgba(255,255,255,.55);outline-offset:-2px}
-
-/* ── Distribution chart (on criterion click) ────────── */
-.dist-section{margin-top:1.2rem;display:none;animation:fadeUp .3s ease}
-.dist-header{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:.6rem;
-}
-.dist-criterion-label{font-size:.82rem;color:var(--text3)}
-.dist-criterion-name{
-  font-size:.95rem;font-weight:700;color:var(--accent2);margin-left:.35rem;
-}
-.dist-close{
-  background:none;border:none;color:var(--text3);
-  cursor:pointer;font-size:.82rem;padding:.15rem .5rem;
-  opacity:.6;transition:opacity .2s,color .2s;font-family:inherit;
-  border-radius:4px;
-}
-.dist-close:hover{opacity:1;color:var(--red)}
-.dist-wrap{
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;padding:.8rem 1rem;height:200px;
-}
-
-/* ── Keyword highlight ──────────────────────────────── */
-.kw-highlight-section{margin-top:1rem;display:none;animation:fadeUp .3s ease}
-.kw-status-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.7rem}
+/* ── Keyword highlight ─────────────────────────────── */
+.kw-status-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem}
 .kw-chip{
   display:inline-flex;align-items:center;gap:.3rem;
-  padding:.2rem .65rem;border-radius:20px;
-  font-size:.8rem;font-weight:600;
-}
-.kw-chip.found{
-  background:rgba(16,185,129,.12);color:var(--green);
-  border:1px solid rgba(16,185,129,.25);
+  padding:.15rem .55rem;border-radius:20px;
+  font-size:.78rem;font-weight:600;
 }
 .kw-chip.missing{
-  background:rgba(239,68,68,.08);color:var(--red);
+  background:rgba(239,68,68,.1);color:#fca5a5;
   border:1px solid rgba(239,68,68,.2);
 }
 .kw-essay-preview{
@@ -630,6 +517,63 @@ footer{
 .kw-essay-preview::-webkit-scrollbar-track{background:transparent}
 .kw-essay-preview::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .kw-mark{border-radius:3px;padding:0 3px;font-weight:700}
+
+/* ── History ───────────────────────────────────────── */
+.history-header-row{display:flex;justify-content:space-between;align-items:center}
+.history-clear-btn{
+  background:none;border:1px solid var(--border);color:var(--text3);
+  font-size:.75rem;padding:.2rem .5rem;border-radius:4px;cursor:pointer;
+}
+.history-clear-btn:hover{border-color:var(--red);color:var(--red)}
+.history-items{display:flex;flex-direction:column;gap:.4rem}
+.history-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.5rem .7rem;border-radius:6px;
+  background:var(--surface2);border:1px solid var(--border);
+  cursor:pointer;transition:border-color .2s;
+}
+.history-item:hover{border-color:var(--accent)}
+.history-meta{font-size:.72rem;color:var(--text3)}
+.history-question{font-size:.85rem;color:var(--text2)}
+.history-score-badge{
+  font-size:.78rem;font-weight:700;
+  padding:.15rem .5rem;border-radius:6px;flex-shrink:0;
+}
+.history-score-badge.high{background:rgba(16,185,129,.12);color:#6ee7b7}
+.history-score-badge.mid{background:rgba(245,158,11,.12);color:#fcd34d}
+.history-score-badge.low{background:rgba(239,68,68,.12);color:#fca5a5}
+
+/* ── Download button ───────────────────────────────── */
+.btn-download{
+  width:100%;margin-top:1rem;padding:.6rem;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text2);font-size:.88rem;font-weight:600;
+  border-radius:8px;cursor:pointer;
+  transition:border-color .2s,color .2s;
+}
+.btn-download:hover{border-color:var(--accent);color:var(--accent2)}
+
+/* ── Stream box ────────────────────────────────────── */
+.stream-box{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:1rem;
+  font-size:.88rem;line-height:1.8;
+  max-height:300px;overflow-y:auto;
+  white-space:pre-wrap;color:var(--text2);
+}
+.stream-box::-webkit-scrollbar{width:5px}
+.stream-box::-webkit-scrollbar-track{background:transparent}
+.stream-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.cursor-blink::after{
+  content:'▌';animation:blink .8s step-end infinite;color:var(--accent);
+}
+@keyframes blink{50%{opacity:0}}
+
+/* ── Footer ────────────────────────────────────────── */
+footer{
+  text-align:center;color:var(--text3);font-size:.78rem;
+  padding:2rem 0 1rem;opacity:.5;
+}
 </style>
 </head>
 <body>
@@ -665,54 +609,8 @@ footer{
       <span id="char-count">0 자</span>
       <span id="sent-analysis" class="analysis-badge" style="display:none"></span>
     </div>
-    <!-- Morpheme analysis display -->
-    <div class="morph-section" id="morph-section">
-      <div class="morph-header">
-        <span class="section-label">텍스트 분석 결과</span>
-        <span class="morph-sent-info" id="morph-sent-info"></span>
-      </div>
-      <div class="morph-legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>명사</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span>용언</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>조사</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span>수식언</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#ec4899"></span>어미</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#14b8a6"></span>접사</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#64748b"></span>부호</span>
-      </div>
-      <div class="morph-display" id="morph-display"></div>
-    </div>
 
-    <!-- Essay Statistics -->
-    <div class="essay-stats-panel" id="essay-stats-panel" style="display:none">
-      <div class="stats-grid">
-        <div class="stat-item">
-          <span class="stat-val" id="stat-words">-</span>
-          <span class="stat-label">어절 수</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-val" id="stat-sents">-</span>
-          <span class="stat-label">문장 수</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-val" id="stat-avg-len">-</span>
-          <span class="stat-label">평균 문장 길이</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-val" id="stat-ttr">-</span>
-          <span class="stat-label" title="고유 형태소 / 전체 형태소">어휘 다양도</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Keyword Highlight -->
-    <div class="kw-highlight-section" id="kw-highlight-section">
-      <div style="font-size:.82rem;color:var(--text3);margin-bottom:.5rem">
-        핵심 키워드 포함 여부
-      </div>
-      <div class="kw-status-row" id="kw-status-row"></div>
-      <div class="kw-essay-preview" id="kw-essay-preview"></div>
-    </div>
+    <!-- Keyword Highlight (moved to report) -->
   </div>
 
   <!-- Analyze Button -->
@@ -737,20 +635,44 @@ footer{
     <div class="card" style="margin-top:1.5rem">
       <div class="card-title"><span class="dot"></span>분석 파이프라인</div>
       <div class="pipeline">
-        <div class="step" id="step-feature"><div class="step-icon">1</div><span>형태소 분석 & 언어 특징 추출</span></div>
+        <div class="step" id="step-feature"><div class="step-icon">1</div><span>언어 특징 추출 & 어법 검사</span></div>
         <div class="step" id="step-model"><div class="step-icon">2</div><span>AI 채점 모델 추론</span></div>
         <div class="step" id="step-score"><div class="step-icon">3</div><span>채점 결과 산출 & 피드백 생성</span></div>
       </div>
-      <!-- Features visualization -->
-      <div class="features-section" id="features-section">
-        <div class="section-label">추출된 언어 특징 (형태소 분석 결과)</div>
+
+      <!-- Features report (shown after extraction) -->
+      <div class="features-report" id="features-report">
+        <!-- Keyword match -->
+        <div class="section-label">핵심 키워드 포함 여부</div>
+        <div class="kw-status-row" id="kw-status-row" style="margin-bottom:.5rem"></div>
+        <div class="kw-essay-preview" id="kw-essay-preview"></div>
+
+        <!-- Feature counts chart -->
+        <div class="section-label">형태소 분석 기반 언어 특징 <span class="feat-clickable-hint">(항목 클릭 시 해당 요소 표시)</span></div>
         <div class="features-chart-wrap">
           <canvas id="features-chart"></canvas>
         </div>
+
+        <!-- Grammar check results -->
+        <div class="section-label">어법 검사 결과</div>
+        <div class="grammar-box" id="grammar-box"></div>
+
+        <!-- Morpheme analysis -->
+        <div class="section-label">형태소 분석 결과</div>
+        <div class="morph-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>명사</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span>용언</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>조사</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span>수식언</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#ec4899"></span>어미</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#14b8a6"></span>접사</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#64748b"></span>부호</span>
+        </div>
+        <div class="morph-report" id="morph-report"></div>
       </div>
     </div>
 
-    <!-- Streaming area (visible during generation) -->
+    <!-- Streaming area -->
     <div class="card" id="stream-card" style="display:none">
       <div class="card-title"><span class="dot"></span>AI 생성 중...</div>
       <div class="stream-box cursor-blink" id="stream-box"></div>
@@ -770,7 +692,6 @@ footer{
           </div>
         </div>
       </div>
-      <!-- Score probability heatmap (greedy logprobs, temperature=0) -->
       <div class="score-probs-section" id="score-probs-section">
         <div style="font-size:.82rem;color:var(--text3);margin-bottom:.5rem">
           모델 내부 확률 분포
@@ -780,8 +701,6 @@ footer{
         </div>
         <div id="probs-heatmap"></div>
       </div>
-
-      <!-- Distribution chart (shown on criterion click) -->
       <div class="dist-section" id="dist-section">
         <div class="dist-header">
           <div>
@@ -805,7 +724,7 @@ footer{
     </div>
   </div>
 
-  <footer>Korean Essay Rater &middot; Powered by vLLM + LoRA Fine-tuned Model</footer>
+  <footer>Korean Essay Rater &middot; Powered by vLLM + LoRA + Bareun</footer>
 </div>
 
 <script>
@@ -823,6 +742,7 @@ let selectedCriterionIdx = null;
 let activeFeat = null;
 let allMorphEls = [];
 let lastAnalysisData = null;
+let sentenceCount = 0;
 const HISTORY_KEY = 'korean_essay_score_history';
 
 const CRITERIA = [
@@ -830,14 +750,13 @@ const CRITERIA = [
   '문장의 연결성','글의 통일성','어휘의 적절성','어법의 적절성'
 ];
 
-// Per-keyword color palette (bg, text, chip variants)
 const KW_COLORS = [
-  { bg:'rgba(245,158,11,.32)',  text:'#fcd34d', chipBg:'rgba(245,158,11,.12)', chipBorder:'rgba(245,158,11,.4)'  }, // amber
-  { bg:'rgba(6,182,212,.28)',   text:'#67e8f9', chipBg:'rgba(6,182,212,.1)',   chipBorder:'rgba(6,182,212,.38)' }, // cyan
-  { bg:'rgba(236,72,153,.28)',  text:'#f9a8d4', chipBg:'rgba(236,72,153,.1)', chipBorder:'rgba(236,72,153,.38)'}, // pink
-  { bg:'rgba(132,204,22,.28)',  text:'#bef264', chipBg:'rgba(132,204,22,.1)', chipBorder:'rgba(132,204,22,.38)'}, // lime
-  { bg:'rgba(251,146,60,.28)',  text:'#fdba74', chipBg:'rgba(251,146,60,.1)', chipBorder:'rgba(251,146,60,.38)'}, // orange
-  { bg:'rgba(167,139,250,.28)', text:'#c4b5fd', chipBg:'rgba(167,139,250,.1)',chipBorder:'rgba(167,139,250,.38)'}, // violet
+  { bg:'rgba(245,158,11,.32)',  text:'#fcd34d', chipBg:'rgba(245,158,11,.12)', chipBorder:'rgba(245,158,11,.4)'  },
+  { bg:'rgba(6,182,212,.28)',   text:'#67e8f9', chipBg:'rgba(6,182,212,.1)',   chipBorder:'rgba(6,182,212,.38)' },
+  { bg:'rgba(236,72,153,.28)',  text:'#f9a8d4', chipBg:'rgba(236,72,153,.1)', chipBorder:'rgba(236,72,153,.38)'},
+  { bg:'rgba(132,204,22,.28)',  text:'#bef264', chipBg:'rgba(132,204,22,.1)', chipBorder:'rgba(132,204,22,.38)'},
+  { bg:'rgba(251,146,60,.28)',  text:'#fdba74', chipBg:'rgba(251,146,60,.1)', chipBorder:'rgba(251,146,60,.38)'},
+  { bg:'rgba(167,139,250,.28)', text:'#c4b5fd', chipBg:'rgba(167,139,250,.1)',chipBorder:'rgba(167,139,250,.38)'},
 ];
 
 // ── Load questions ───────────────────────────────────
@@ -851,88 +770,77 @@ fetch('/api/questions').then(r=>r.json()).then(data=>{
   });
 });
 
-// ── Question change → show full text & keywords ──────
+// ── Question change ──────────────────────────────────
 questionSelect.addEventListener('change', ()=>{
   const idx = +questionSelect.value;
   if(idx<0) return;
   const q = questionsData[idx];
-
-  // Show full question text
   const display = $('#question-display');
   display.textContent = q.question;
   display.style.display = 'block';
 
-  // Show keywords
   const area = $('#keywords-area');
   const list = $('#keywords-list');
   list.innerHTML = '';
-  q.keywords.split(',').forEach(k=>{
+  q.keywords.split(/,\s*(?![^(]*\))/).forEach(k=>{
     const span = document.createElement('span');
     span.className = 'keywords-tag';
-    span.textContent = k.trim();
+    span.textContent = k.trim().replace(/[()]/g, m => m === '(' ? '/' : '').replace(/,\s*/g, '/');
     list.appendChild(span);
   });
   area.style.display = 'flex';
   checkReady();
-  updateKeywordHighlight();
 });
 
-// ── Essay stats ──────────────────────────────────────
-let analysisTimer = null;
-let analysisAbort = null;
-let morphSentenceCount = 0;
+// ── Essay input: sentence count check (debounced) ────
+let sentTimer = null;
+let sentAbort = null;
 
 essayInput.addEventListener('input', ()=>{
   const text = essayInput.value;
   $('#char-count').textContent = text.length + ' 자';
-  morphSentenceCount = 0;
+  sentenceCount = 0;
 
-  // Debounced text analysis (1s after last keystroke)
-  clearTimeout(analysisTimer);
-  if(analysisAbort) analysisAbort.abort();
+  clearTimeout(sentTimer);
+  if(sentAbort) sentAbort.abort();
   const badge = $('#sent-analysis');
-  const morphSection = $('#morph-section');
 
   if(text.trim().length > 5){
     badge.style.display = 'inline-flex';
-    badge.textContent = '분석 중...';
+    badge.textContent = '문장 수 확인 중...';
     badge.classList.add('loading');
-    analysisTimer = setTimeout(()=>{
-      analysisAbort = new AbortController();
-      fetch('/api/text-analysis', {
+    sentTimer = setTimeout(()=>{
+      sentAbort = new AbortController();
+      fetch('/api/sentence-count', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({essay: text}),
-        signal: analysisAbort.signal,
+        signal: sentAbort.signal,
       }).then(r=>r.json()).then(data=>{
-        const cnt = data.sentences ? data.sentences.length : 0;
-        morphSentenceCount = cnt;
-        badge.textContent = '형태소 분석: ' + cnt + ' 문장' + (cnt >= 2 ? '' : ' (2문장 이상 필요)');
+        const cnt = data.sentence_count || 0;
+        sentenceCount = cnt;
+        badge.textContent = cnt + '문장 감지' + (cnt >= 2 ? ' ✓' : ' (2문장 이상 필요)');
         badge.classList.remove('loading');
-        renderMorphemes(data.sentences || []);
         checkReady();
       }).catch(e=>{
         if(e.name !== 'AbortError'){
-          morphSentenceCount = 0;
+          sentenceCount = 0;
           badge.style.display = 'none';
-          morphSection.style.display = 'none';
           checkReady();
         }
       });
-    }, 1000);
+    }, 1200);
   } else {
-    morphSentenceCount = 0;
+    sentenceCount = 0;
     badge.style.display = 'none';
-    morphSection.style.display = 'none';
   }
   checkReady();
-  updateKeywordHighlight();
 });
 
 function checkReady(){
   const qIdx = Number(questionSelect.value);
   const hasQuestion = Number.isFinite(qIdx) && qIdx >= 0;
-  btnAnalyze.disabled = !(hasQuestion && essayInput.value.trim().length > 10 && morphSentenceCount >= 2);
+  btnAnalyze.disabled = !(hasQuestion && essayInput.value.trim().length > 10 && sentenceCount >= 2);
 }
 
 // ── Analyze ──────────────────────────────────────────
@@ -946,12 +854,11 @@ async function startAnalysis(){
   btnAnalyze.classList.add('loading');
   btnAnalyze.querySelector('.btn-text').textContent = '분석 중...';
 
-  // Reset UI
   analysisPanel.classList.add('visible');
   ['step-feature','step-model','step-score'].forEach(id=>{
     document.getElementById(id).classList.remove('active','done');
   });
-  $('#features-section').style.display = 'none';
+  $('#features-report').style.display = 'none';
   $('#stream-card').style.display = 'none';
   $('#stream-box').textContent = '';
   $('#stream-box').classList.add('cursor-blink');
@@ -964,11 +871,9 @@ async function startAnalysis(){
   $('#ensemble-info').textContent = '';
   $('#btn-download').style.display = 'none';
   lastAnalysisData = null;
-
-  setStep('step-feature','active');
   clearFeatureHighlight();
 
-  // Scroll to analysis panel
+  setStep('step-feature','active');
   analysisPanel.scrollIntoView({behavior:'smooth', block:'start'});
 
   const body = JSON.stringify({
@@ -1007,7 +912,7 @@ async function startAnalysis(){
         }
 
         if(data.type === 'features'){
-          renderFeaturesChart(data.full || {});
+          renderFeaturesReport(data);
         }
 
         if(data.type === 'token'){
@@ -1049,10 +954,6 @@ async function startAnalysis(){
           renderScoreProbs(data.probs);
         }
 
-        if(data.type === 'done'){
-          // Nothing extra needed
-        }
-
         if(data.type === 'error'){
           alert(data.message || '평가를 진행할 수 없습니다.');
           await reader.cancel();
@@ -1075,36 +976,39 @@ function setStep(id, state){
   el.classList.add(state);
 }
 
-// ── Render features chart ────────────────────────────
-function renderFeaturesChart(features){
-  const section = $('#features-section');
+// ── Render features report ───────────────────────────
+function renderFeaturesReport(data){
+  const section = $('#features-report');
   section.style.display = 'block';
 
-  // Add clickability hint to section label
-  const sectionLabel = section.querySelector('.section-label');
-  if(sectionLabel && !sectionLabel.querySelector('.feat-clickable-hint')){
-    const hint = document.createElement('span');
-    hint.className = 'feat-clickable-hint';
-    hint.textContent = '(항목을 클릭하면 해당 요소가 표시됩니다)';
-    sectionLabel.appendChild(hint);
-  }
+  // 1. Keyword match highlight
+  updateKeywordHighlight();
 
+  // 2. Feature counts chart
+  renderFeaturesChart(data.feature_counts || {});
+
+  // 3. Grammar results
+  renderGrammar(data.grammar || {});
+
+  // 4. Morpheme analysis
+  renderMorphemes(data.morph_sentences || []);
+}
+
+function renderFeaturesChart(features){
   const entries = Object.entries(features)
     .filter(([,v])=>v>0)
     .sort((a,b)=>b[1]-a[1])
     .slice(0, 25);
 
+  const canvas = $('#features-chart');
   if(entries.length === 0){
-    section.querySelector('.features-chart-wrap').innerHTML =
+    canvas.parentElement.innerHTML =
       '<div style="text-align:center;color:var(--text3);padding:1rem">추출된 특징 없음</div>';
     return;
   }
 
   const labels = entries.map(([k])=>k);
   const values = entries.map(([,v])=>v);
-
-  // Dynamic height based on bar count
-  const canvas = $('#features-chart');
   const chartHeight = Math.max(200, entries.length * 28 + 40);
   canvas.parentElement.style.maxHeight = (chartHeight + 20) + 'px';
 
@@ -1166,9 +1070,174 @@ function renderFeaturesChart(features){
     }
   });
 
-  // Resize canvas to fit
   canvas.style.height = chartHeight + 'px';
   featuresChart.resize();
+}
+
+function renderGrammar(grammar){
+  const box = $('#grammar-box');
+  const spErrs = grammar.spelling_errors || [];
+  const scErrs = grammar.spacing_errors || [];
+
+  if(spErrs.length === 0 && scErrs.length === 0){
+    box.innerHTML = '<span style="color:var(--green)">맞춤법 및 띄어쓰기 오류 없음</span>';
+    return;
+  }
+
+  let html = `<div style="margin-bottom:.4rem;font-weight:600">맞춤법오류 ${spErrs.length}건, 띄어쓰기오류 ${scErrs.length}건</div>`;
+  spErrs.forEach(e => {
+    html += `<div class="error-item"><span class="error-type spelling">맞춤법</span> ${esc(e.origin)} <span class="error-arrow">→</span> ${esc(e.revised)}</div>`;
+  });
+  scErrs.forEach(e => {
+    html += `<div class="error-item"><span class="error-type spacing">띄어쓰기</span> ${esc(e.origin)} <span class="error-arrow">→</span> ${esc(e.revised)}</div>`;
+  });
+  box.innerHTML = html;
+}
+
+// ── Render morpheme analysis (in report) ─────────────
+function renderMorphemes(sentences){
+  const display = $('#morph-report');
+  allMorphEls = [];
+  let globalIdx = 0;
+
+  if(!sentences || sentences.length === 0){
+    display.innerHTML = '<div style="text-align:center;color:var(--text3);padding:1rem">형태소 분석 결과 없음</div>';
+    return;
+  }
+
+  display.innerHTML = '';
+  sentences.forEach((sent, si) => {
+    const sentDiv = document.createElement('div');
+    sentDiv.className = 'morph-sent';
+
+    const badge = document.createElement('span');
+    badge.className = 'morph-sent-num';
+    badge.textContent = (si+1);
+    sentDiv.appendChild(badge);
+
+    sent.words.forEach((word, wi) => {
+      const wordSpan = document.createElement('span');
+      wordSpan.className = 'morph-word';
+
+      word.morphemes.forEach(m => {
+        const mSpan = document.createElement('span');
+        mSpan.className = 'morph ' + posCat(m.tag);
+        mSpan.title = m.tag + ': ' + m.feature;
+        mSpan.dataset.feature = m.feature;
+        mSpan.dataset.morphSeq = globalIdx;
+        mSpan.innerHTML = esc(m.surface) + '<sub>' + esc(m.feature) + '</sub>';
+        wordSpan.appendChild(mSpan);
+        allMorphEls.push(mSpan);
+        globalIdx++;
+      });
+
+      sentDiv.appendChild(wordSpan);
+      if(wi < sent.words.length - 1){
+        sentDiv.appendChild(document.createTextNode(' '));
+      }
+    });
+
+    display.appendChild(sentDiv);
+  });
+}
+
+// ── Feature highlight logic ──────────────────────────
+function highlightFeature(featureName){
+  const display = $('#morph-report');
+  if(!allMorphEls.length) return;
+
+  if(activeFeat === featureName){
+    clearFeatureHighlight();
+    return;
+  }
+
+  clearFeatureHighlight();
+  activeFeat = featureName;
+
+  if(featureName === '문장수'){
+    const sentDivs = display.querySelectorAll('.morph-sent');
+    sentDivs.forEach(el => el.classList.add('sent-hl'));
+    showFeatBadge(featureName, sentDivs.length);
+    display.scrollIntoView({behavior:'smooth', block:'nearest'});
+    return;
+  }
+
+  if(featureName.includes('+')){
+    const parts = featureName.split('+').map(s => s.trim());
+    for(let i = 0; i <= allMorphEls.length - parts.length; i++){
+      let match = true;
+      for(let j = 0; j < parts.length; j++){
+        if(allMorphEls[i+j].dataset.feature !== parts[j]){
+          match = false;
+          break;
+        }
+      }
+      if(match){
+        for(let j = 0; j < parts.length; j++){
+          allMorphEls[i+j].classList.add('feat-hl');
+        }
+      }
+    }
+  } else {
+    allMorphEls.forEach(el => {
+      if(el.dataset.feature === featureName){
+        el.classList.add('feat-hl');
+      }
+    });
+  }
+
+  display.classList.add('feat-active');
+  const hlCount = display.querySelectorAll('.feat-hl').length;
+  showFeatBadge(featureName, hlCount);
+  display.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function clearFeatureHighlight(){
+  activeFeat = null;
+  const display = $('#morph-report');
+  if(display){
+    display.classList.remove('feat-active');
+    display.querySelectorAll('.feat-hl').forEach(el => el.classList.remove('feat-hl'));
+    display.querySelectorAll('.sent-hl').forEach(el => el.classList.remove('sent-hl'));
+  }
+  removeFeatBadge();
+}
+
+function showFeatBadge(name, count){
+  removeFeatBadge();
+  const report = $('#features-report');
+  if(!report) return;
+  const badge = document.createElement('span');
+  badge.className = 'feat-badge';
+  badge.id = 'feat-badge';
+  badge.innerHTML = esc(name) + ' <span style="opacity:.6">(' + count + '개)</span> <span class="close-x">\u2715</span>';
+  badge.onclick = () => clearFeatureHighlight();
+  badge.style.marginBottom = '.5rem';
+  report.querySelector('.morph-legend').after(badge);
+}
+
+function removeFeatBadge(){
+  const existing = document.getElementById('feat-badge');
+  if(existing) existing.remove();
+}
+
+function posCat(pos){
+  if(!pos) return 'cat-other';
+  const c = pos.charAt(0);
+  if(c==='N') return 'cat-noun';
+  if(c==='V') return 'cat-verb';
+  if(c==='J') return 'cat-josa';
+  if(c==='M') return 'cat-mod';
+  if(c==='E') return 'cat-end';
+  if(c==='X') return 'cat-affix';
+  if(c==='S' || c==='I') return 'cat-punct';
+  return 'cat-other';
+}
+
+function esc(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
 }
 
 // ── Render scores ────────────────────────────────────
@@ -1285,14 +1354,11 @@ function renderEvaluators(data){
   const container = $('#evaluator-cards');
   container.innerHTML = '';
 
-  // (info elements hidden)
-
   (data.evaluators || []).forEach((ev, i) => {
     const total = ev.scores.reduce((a,b) => a+b, 0);
     const max = ev.scores.length * 9;
     const tier = total >= max*0.77 ? 'high' : total >= max*0.44 ? 'mid' : 'low';
 
-    // Build rubric sub-items
     let rubricsHtml = '';
     CRITERIA.forEach((criterion, ci) => {
       const score = ev.scores[ci] || 0;
@@ -1325,199 +1391,213 @@ function renderEvaluators(data){
   $('#feedback-card').style.animation = 'fadeUp .5s ease';
 }
 
-// ── Render morpheme analysis ─────────────────────────
-function renderMorphemes(sentences){
-  const section = $('#morph-section');
-  const display = $('#morph-display');
-  const info = $('#morph-sent-info');
-
-  if(!sentences || sentences.length === 0){
-    section.style.display = 'none';
-    return;
-  }
-
-  // Clear previous highlight state
-  clearFeatureHighlight();
-  allMorphEls = [];
-  let globalIdx = 0;
-
+// ── Score probability heatmap ─────────────────────────
+function renderScoreProbs(probs) {
+  const section = $('#score-probs-section');
   section.style.display = 'block';
-  info.textContent = sentences.length + '개 문장 감지';
 
-  updateEssayStats(sentences);
-  display.innerHTML = '';
-  sentences.forEach((sent, si) => {
-    const sentDiv = document.createElement('div');
-    sentDiv.className = 'morph-sent';
+  let html = `<table class="probs-table"><thead><tr>
+    <th class="probs-th-label"></th>`;
+  for (let s = 1; s <= 9; s++) html += `<th>${s}</th>`;
+  html += `<th class="probs-th-exp">E[X]</th>`;
+  html += `</tr></thead><tbody>`;
 
-    const badge = document.createElement('span');
-    badge.className = 'morph-sent-num';
-    badge.textContent = (si+1);
-    sentDiv.appendChild(badge);
+  let totalExpected = 0;
 
-    sent.words.forEach((word, wi) => {
-      const wordSpan = document.createElement('span');
-      wordSpan.className = 'morph-word';
+  CRITERIA.forEach((name, i) => {
+    const dist = probs[i] || Array(9).fill(0);
+    const maxP = Math.max(...dist);
+    const argmaxIdx = dist.indexOf(maxP);
 
-      word.morphemes.forEach(m => {
-        const mSpan = document.createElement('span');
-        mSpan.className = 'morph ' + posCat(m.tag);
-        mSpan.title = m.tag + ': ' + m.feature;
-        mSpan.dataset.feature = m.feature;
-        mSpan.dataset.morphSeq = globalIdx;
-        mSpan.innerHTML = esc(m.surface) + '<sub>' + esc(m.feature) + '</sub>';
-        wordSpan.appendChild(mSpan);
-        allMorphEls.push(mSpan);
-        globalIdx++;
-      });
+    // 확률 가중 기댓값: Σ(score * prob)
+    const expected = dist.reduce((sum, p, j) => sum + p * (j + 1), 0);
+    totalExpected += expected;
 
-      sentDiv.appendChild(wordSpan);
-
-      if(wi < sent.words.length - 1){
-        sentDiv.appendChild(document.createTextNode(' '));
+    html += `<tr><td class="probs-label">${esc(name)}</td>`;
+    dist.forEach((p, j) => {
+      const score = j + 1;
+      const intensity = maxP > 0 ? p / maxP : 0;
+      const alpha = (0.06 + intensity * 0.78).toFixed(2);
+      const textAlpha = (0.25 + intensity * 0.75).toFixed(2);
+      let bg, color;
+      if (score >= 7) {
+        bg = `rgba(16,185,129,${alpha})`;
+        color = `rgba(110,231,183,${textAlpha})`;
+      } else if (score >= 4) {
+        bg = `rgba(245,158,11,${alpha})`;
+        color = `rgba(252,211,77,${textAlpha})`;
+      } else {
+        bg = `rgba(239,68,68,${alpha})`;
+        color = `rgba(252,165,165,${textAlpha})`;
       }
+      const pct = p > 0 ? (p * 100).toFixed(3) + '%' : '';
+      const title = `${name} — 점수 ${score}: ${(p * 100).toFixed(1)}%`;
+      html += `<td class="probs-cell${j === argmaxIdx ? ' argmax' : ''}"
+        style="background:${bg};color:${color}"
+        title="${esc(title)}">${pct}</td>`;
     });
-
-    display.appendChild(sentDiv);
+    html += `<td class="probs-exp">${expected.toFixed(2)}</td>`;
+    html += '</tr>';
   });
+
+  // 총점 행
+  html += `<tr class="probs-total-row">
+    <td class="probs-label" style="font-weight:700">총점</td>`;
+  for (let s = 1; s <= 9; s++) html += `<td></td>`;
+  html += `<td class="probs-exp probs-total">${totalExpected.toFixed(2)}</td>`;
+  html += '</tr>';
+
+  html += '</tbody></table>';
+  $('#probs-heatmap').innerHTML = html;
 }
 
-// ── Feature highlight logic ──────────────────────────
-function highlightFeature(featureName){
-  const display = $('#morph-display');
-  const section = $('#morph-section');
+// ── Distribution chart ────────────────────────────────
+function buildScoreFreq(dist) {
+  const freq = Array(9).fill(0);
+  (dist || []).forEach(s => { if (s >= 1 && s <= 9) freq[s - 1]++; });
+  return freq;
+}
 
-  if(!allMorphEls.length || !section || section.style.display === 'none') return;
+function showDistribution(idx, criterionName, dist) {
+  if (selectedCriterionIdx === idx) { hideDistribution(); return; }
+  selectedCriterionIdx = idx;
 
-  // Toggle off if same feature clicked
-  if(activeFeat === featureName){
-    clearFeatureHighlight();
-    return;
-  }
+  document.querySelectorAll('.score-item').forEach((el, i) =>
+    el.classList.toggle('selected', i === idx)
+  );
 
-  // Clear previous
-  clearFeatureHighlight();
-  activeFeat = featureName;
+  const section = $('#dist-section');
+  section.style.display = 'block';
+  $('#dist-criterion-name').textContent = criterionName;
 
-  if(featureName === '문장수'){
-    // Kiwi 문장 분리 결과로 각 문장 단위를 강조
-    const sentDivs = display.querySelectorAll('.morph-sent');
-    sentDivs.forEach(el => el.classList.add('sent-hl'));
-    showFeatBadge(featureName, sentDivs.length);
-    section.scrollIntoView({behavior:'smooth', block:'nearest'});
-    return;
-  }
+  const freq = buildScoreFreq(dist);
+  const total = freq.reduce((a, b) => a + b, 0);
 
-  if(featureName.includes('+')){
-    // N-gram feature: find consecutive morphemes matching the pattern
-    const parts = featureName.split('+').map(s => s.trim());
-    for(let i = 0; i <= allMorphEls.length - parts.length; i++){
-      let match = true;
-      for(let j = 0; j < parts.length; j++){
-        if(allMorphEls[i+j].dataset.feature !== parts[j]){
-          match = false;
-          break;
+  const ctx = $('#dist-chart').getContext('2d');
+  if (distChart) distChart.destroy();
+
+  distChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['1','2','3','4','5','6','7','8','9'],
+      datasets: [{
+        label: '빈도',
+        data: freq,
+        backgroundColor: freq.map((_, i) => {
+          const sc = i + 1;
+          return sc >= 7 ? 'rgba(16,185,129,.7)' : sc >= 4 ? 'rgba(245,158,11,.7)' : 'rgba(239,68,68,.7)';
+        }),
+        borderColor: freq.map((_, i) => {
+          const sc = i + 1;
+          return sc >= 7 ? '#10b981' : sc >= 4 ? '#f59e0b' : '#ef4444';
+        }),
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1, color: '#64748b', font: { size: 10 },
+            callback: v => Number.isInteger(v) ? v : ''
+          },
+          grid: { color: 'rgba(51,65,85,.3)' },
+          title: { display: true, text: '빈도', color: '#64748b', font: { size: 10 } }
+        },
+        x: {
+          ticks: { color: '#94a3b8', font: { size: 12 } },
+          grid: { display: false },
+          title: { display: true, text: '점수', color: '#64748b', font: { size: 10 } }
         }
-      }
-      if(match){
-        for(let j = 0; j < parts.length; j++){
-          allMorphEls[i+j].classList.add('feat-hl');
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          titleColor: '#e2e8f0',
+          bodyColor: '#e2e8f0',
+          borderColor: '#334155',
+          borderWidth: 1,
+          callbacks: {
+            title: items => `점수 ${items[0].label}점`,
+            label: item => `${item.raw}회 (${total > 0 ? (item.raw / total * 100).toFixed(1) : 0}%)`
+          }
         }
-      }
+      },
+      animation: { duration: 400 }
     }
-  } else {
-    // Simple feature: match by feature name
-    allMorphEls.forEach(el => {
-      if(el.dataset.feature === featureName){
-        el.classList.add('feat-hl');
-      }
-    });
-  }
-
-  display.classList.add('feat-active');
-
-  const hlCount = display.querySelectorAll('.feat-hl').length;
-  showFeatBadge(featureName, hlCount);
-
-  // Scroll morph section into view
-  section.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
 }
 
-function clearFeatureHighlight(){
-  activeFeat = null;
-  const display = $('#morph-display');
-  if(display){
-    display.classList.remove('feat-active');
-    display.querySelectorAll('.feat-hl').forEach(el => el.classList.remove('feat-hl'));
-    display.querySelectorAll('.sent-hl').forEach(el => el.classList.remove('sent-hl'));
-  }
-  removeFeatBadge();
+function hideDistribution() {
+  selectedCriterionIdx = null;
+  const section = $('#dist-section');
+  if (section) section.style.display = 'none';
+  document.querySelectorAll('.score-item').forEach(el => el.classList.remove('selected'));
+  if (distChart) { distChart.destroy(); distChart = null; }
 }
 
-function showFeatBadge(name, count){
-  removeFeatBadge();
-  const header = $('.morph-header');
-  if(!header) return;
-  const badge = document.createElement('span');
-  badge.className = 'feat-badge';
-  badge.id = 'feat-badge';
-  badge.innerHTML = esc(name) + ' <span style="opacity:.6">(' + count + '개)</span> <span class="close-x">\u2715</span>';
-  badge.onclick = () => clearFeatureHighlight();
-  header.appendChild(badge);
+// ── Keyword Highlight ─────────────────────────────────
+function parseKeywords(kwStr) {
+  // Split by commas NOT inside parentheses
+  return (kwStr || '').split(/,\s*(?![^(]*\))/).map(k => {
+    k = k.trim();
+    if (!k) return null;
+    // "공기(기체, 대류현상)" -> alts: ["공기","기체","대류현상"]
+    const m = k.match(/^(.+?)\((.+)\)$/);
+    if (m) {
+      const alts = [m[1].trim(), ...m[2].split(',').map(s => s.trim())].filter(Boolean);
+      return { main: alts[0], alts };
+    }
+    return { main: k, alts: [k] };
+  }).filter(Boolean);
 }
 
-function removeFeatBadge(){
-  const existing = document.getElementById('feat-badge');
-  if(existing) existing.remove();
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function posCat(pos){
-  if(!pos) return 'cat-other';
-  const c = pos.charAt(0);
-  if(c==='N') return 'cat-noun';
-  if(c==='V') return 'cat-verb';
-  if(c==='J') return 'cat-josa';
-  if(c==='M') return 'cat-mod';
-  if(c==='E') return 'cat-end';
-  if(c==='X') return 'cat-affix';
-  if(c==='S' || c==='I') return 'cat-punct';
-  return 'cat-other';
+function highlightKeywordsInText(text, keywords) {
+  const termColorMap = {};
+  keywords.forEach((kw, i) => {
+    const c = KW_COLORS[i % KW_COLORS.length];
+    kw.alts.forEach(a => { termColorMap[a] = c; });
+  });
+  const allTerms = Object.keys(termColorMap);
+  if (!allTerms.length) return esc(text);
+  const regex = new RegExp('(' + allTerms.map(escapeRegex).join('|') + ')', 'g');
+  return text.split(regex).map(part => {
+    const c = termColorMap[part];
+    return c
+      ? `<mark class="kw-mark" style="background:${c.bg};color:${c.text}">${esc(part)}</mark>`
+      : esc(part);
+  }).join('');
 }
 
-function esc(s){
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
-// ── Essay Statistics ──────────────────────────────────
-function updateEssayStats(sentences){
-  const panel = $('#essay-stats-panel');
-  if(!sentences || sentences.length === 0){
-    panel.style.display = 'none';
+function updateKeywordHighlight() {
+  const essay = essayInput.value;
+  const qIdx = +questionSelect.value;
+  if (isNaN(qIdx) || qIdx < 0 || !questionsData[qIdx] || !essay.trim()) {
     return;
   }
-  let totalWords = 0;
-  const allSurfaces = [];
-  sentences.forEach(sent => {
-    totalWords += sent.words.length;
-    sent.words.forEach(word => {
-      word.morphemes.forEach(m => {
-        if(m.surface && m.surface.trim()) allSurfaces.push(m.surface);
-      });
-    });
-  });
-  const sentCount = sentences.length;
-  const avgLen = sentCount > 0 ? (totalWords / sentCount).toFixed(1) : '-';
-  const uniqueSet = new Set(allSurfaces);
-  const ttr = allSurfaces.length > 0
-    ? (uniqueSet.size / allSurfaces.length * 100).toFixed(1) + '%'
-    : '-';
-  $('#stat-words').textContent = totalWords;
-  $('#stat-sents').textContent = sentCount;
-  $('#stat-avg-len').textContent = avgLen;
-  $('#stat-ttr').textContent = ttr;
-  panel.style.display = 'block';
+  const keywords = parseKeywords(questionsData[qIdx].keywords);
+  const essayNorm = essay.toLowerCase().replace(/\s/g, '');
+
+  $('#kw-status-row').innerHTML = keywords.map((kw, i) => {
+    const found = kw.alts.some(a => essayNorm.includes(a.toLowerCase().replace(/\s/g, '')));
+    const label = kw.alts.join('/');
+    if (found) {
+      const c = KW_COLORS[i % KW_COLORS.length];
+      return `<span class="kw-chip" style="background:${c.chipBg};color:${c.text};border:1px solid ${c.chipBorder}">✓ ${esc(label)}</span>`;
+    }
+    return `<span class="kw-chip missing">✗ ${esc(label)}</span>`;
+  }).join('');
+
+  $('#kw-essay-preview').innerHTML = highlightKeywordsInText(essay, keywords);
 }
 
 // ── History ───────────────────────────────────────────
@@ -1632,200 +1712,6 @@ function downloadResults(){
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-}
-
-// ── Score probability heatmap ─────────────────────────
-function renderScoreProbs(probs) {
-  const section = $('#score-probs-section');
-  section.style.display = 'block';
-
-  let html = `<table class="probs-table"><thead><tr>
-    <th class="probs-th-label"></th>`;
-  for (let s = 1; s <= 9; s++) html += `<th>${s}</th>`;
-  html += `</tr></thead><tbody>`;
-
-  CRITERIA.forEach((name, i) => {
-    const dist = probs[i] || Array(9).fill(0);
-    const maxP = Math.max(...dist);
-    const argmaxIdx = dist.indexOf(maxP);
-
-    html += `<tr><td class="probs-label">${esc(name)}</td>`;
-    dist.forEach((p, j) => {
-      const score = j + 1;
-      const intensity = maxP > 0 ? p / maxP : 0;
-      const alpha = (0.06 + intensity * 0.78).toFixed(2);
-      const textAlpha = (0.25 + intensity * 0.75).toFixed(2);
-      let bg, color;
-      if (score >= 7) {
-        bg = `rgba(16,185,129,${alpha})`;
-        color = `rgba(110,231,183,${textAlpha})`;
-      } else if (score >= 4) {
-        bg = `rgba(245,158,11,${alpha})`;
-        color = `rgba(252,211,77,${textAlpha})`;
-      } else {
-        bg = `rgba(239,68,68,${alpha})`;
-        color = `rgba(252,165,165,${textAlpha})`;
-      }
-      const pct = p > 0 ? (p * 100).toFixed(3) + '%' : '';
-      const title = `${name} — 점수 ${score}: ${(p * 100).toFixed(1)}%`;
-      html += `<td class="probs-cell${j === argmaxIdx ? ' argmax' : ''}"
-        style="background:${bg};color:${color}"
-        title="${esc(title)}">${pct}</td>`;
-    });
-    html += '</tr>';
-  });
-
-  html += '</tbody></table>';
-  $('#probs-heatmap').innerHTML = html;
-}
-
-// ── Distribution chart ────────────────────────────────
-function buildScoreFreq(dist) {
-  const freq = Array(9).fill(0);
-  (dist || []).forEach(s => { if (s >= 1 && s <= 9) freq[s - 1]++; });
-  return freq;
-}
-
-function showDistribution(idx, criterionName, dist) {
-  // Toggle off on same criterion
-  if (selectedCriterionIdx === idx) { hideDistribution(); return; }
-  selectedCriterionIdx = idx;
-
-  document.querySelectorAll('.score-item').forEach((el, i) =>
-    el.classList.toggle('selected', i === idx)
-  );
-
-  const section = $('#dist-section');
-  section.style.display = 'block';
-  $('#dist-criterion-name').textContent = criterionName;
-
-  const freq = buildScoreFreq(dist);
-  const total = freq.reduce((a, b) => a + b, 0);
-
-  const ctx = $('#dist-chart').getContext('2d');
-  if (distChart) distChart.destroy();
-
-  distChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['1','2','3','4','5','6','7','8','9'],
-      datasets: [{
-        label: '빈도',
-        data: freq,
-        backgroundColor: freq.map((_, i) => {
-          const sc = i + 1;
-          return sc >= 7 ? 'rgba(16,185,129,.7)' : sc >= 4 ? 'rgba(245,158,11,.7)' : 'rgba(239,68,68,.7)';
-        }),
-        borderColor: freq.map((_, i) => {
-          const sc = i + 1;
-          return sc >= 7 ? '#10b981' : sc >= 4 ? '#f59e0b' : '#ef4444';
-        }),
-        borderWidth: 1,
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            stepSize: 1, color: '#64748b', font: { size: 10 },
-            callback: v => Number.isInteger(v) ? v : ''
-          },
-          grid: { color: 'rgba(51,65,85,.3)' },
-          title: { display: true, text: '빈도', color: '#64748b', font: { size: 10 } }
-        },
-        x: {
-          ticks: { color: '#94a3b8', font: { size: 12 } },
-          grid: { display: false },
-          title: { display: true, text: '점수', color: '#64748b', font: { size: 10 } }
-        }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#1e293b',
-          titleColor: '#e2e8f0',
-          bodyColor: '#e2e8f0',
-          borderColor: '#334155',
-          borderWidth: 1,
-          callbacks: {
-            title: items => `점수 ${items[0].label}점`,
-            label: item => `${item.raw}회 (${total > 0 ? (item.raw / total * 100).toFixed(1) : 0}%)`
-          }
-        }
-      },
-      animation: { duration: 400 }
-    }
-  });
-}
-
-function hideDistribution() {
-  selectedCriterionIdx = null;
-  const section = $('#dist-section');
-  if (section) section.style.display = 'none';
-  document.querySelectorAll('.score-item').forEach(el => el.classList.remove('selected'));
-  if (distChart) { distChart.destroy(); distChart = null; }
-}
-
-// ── Keyword Highlight ─────────────────────────────────
-function parseKeywords(kwStr) {
-  return (kwStr || '').split(',').map(k => {
-    k = k.trim();
-    const m = k.match(/^(.+?)\((.+?)\)$/);
-    return m ? { main: m[1].trim(), alt: m[2].trim() } : { main: k, alt: null };
-  }).filter(k => k.main);
-}
-
-function escapeRegex(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function highlightKeywordsInText(text, keywords) {
-  // Build term → color map (main + alt share the same color index)
-  const termColorMap = {};
-  keywords.forEach((kw, i) => {
-    const c = KW_COLORS[i % KW_COLORS.length];
-    if (kw.main) termColorMap[kw.main] = c;
-    if (kw.alt)  termColorMap[kw.alt]  = c;
-  });
-  const allTerms = Object.keys(termColorMap);
-  if (!allTerms.length) return esc(text);
-  const regex = new RegExp('(' + allTerms.map(escapeRegex).join('|') + ')', 'g');
-  return text.split(regex).map(part => {
-    const c = termColorMap[part];
-    return c
-      ? `<mark class="kw-mark" style="background:${c.bg};color:${c.text}">${esc(part)}</mark>`
-      : esc(part);
-  }).join('');
-}
-
-function updateKeywordHighlight() {
-  const essay = essayInput.value;
-  const qIdx = +questionSelect.value;
-  const section = $('#kw-highlight-section');
-  if (isNaN(qIdx) || qIdx < 0 || !questionsData[qIdx] || !essay.trim()) {
-    section.style.display = 'none';
-    return;
-  }
-  const keywords = parseKeywords(questionsData[qIdx].keywords);
-  section.style.display = 'block';
-
-  // Keyword chips: found → keyword color, missing → red
-  $('#kw-status-row').innerHTML = keywords.map((kw, i) => {
-    const found = essay.includes(kw.main) || (kw.alt && essay.includes(kw.alt));
-    const label = kw.alt ? `${kw.main}(${kw.alt})` : kw.main;
-    if (found) {
-      const c = KW_COLORS[i % KW_COLORS.length];
-      return `<span class="kw-chip" style="background:${c.chipBg};color:${c.text};border:1px solid ${c.chipBorder}">✓ ${esc(label)}</span>`;
-    }
-    return `<span class="kw-chip missing">✗ ${esc(label)}</span>`;
-  }).join('');
-
-  // Highlighted preview
-  $('#kw-essay-preview').innerHTML = highlightKeywordsInText(essay, keywords);
 }
 
 // ── Init ──────────────────────────────────────────────

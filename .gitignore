@@ -30,6 +30,12 @@ Thumbs.db
 # Logs
 *.log
 
+# Certificates & secrets
+*.pem
+
+# Backup files
+rater_bak/
+
 # Large model files (use Git LFS or Hugging Face Hub instead)
 *.bin
 *.pt

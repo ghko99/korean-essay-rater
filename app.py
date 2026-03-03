@@ -1,5 +1,6 @@
 import asyncio
 import math
+import os
 import uuid
 import json
 import re
@@ -7,6 +8,7 @@ import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
@@ -19,24 +21,31 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.lora.request import LoRARequest
 from vllm.sampling_params import RequestOutputKind
 
-from feature_extractor import (
-    analyze_with_kiwi,
-    extract_features_from_raw_tokens,
-    select_and_stringify,
-    token_to_feature,
-)
+from feature_extractor import FeatureExtractor, token_to_feature
 
 # ── Paths & config ────────────────────────────────────────────────────
+load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = "/home/khko/models/llama"
+MODEL_PATH = os.getenv("MODEL_PATH", "meta-llama/Llama-3.1-8B-Instruct")
 ADAPTER_DIR = str(BASE_DIR / "rater")
+
+BAREUN_API_KEY = os.environ["BAREUN_API_KEY"]
+CA_BUNDLE_PATH = str(BASE_DIR / "artifacts" / "bareun_ca_bundle.pem")
+QUESTION_REQ_PATH = str(BASE_DIR / "artifacts" / "question_requirements.json")
+
+# ── Feature extractor (bareun-based) ─────────────────────────────────
+extractor = FeatureExtractor(
+    bareun_api_key=BAREUN_API_KEY,
+    ca_bundle_path=CA_BUNDLE_PATH,
+    question_requirements_path=QUESTION_REQ_PATH,
+)
 
 # ── Essay question / keyword mapping ─────────────────────────────────
 _MAPPING_PATH = BASE_DIR / "essay_question_keyword_mapping.json"
 question_keyword_map: dict = json.loads(_MAPPING_PATH.read_text(encoding="utf-8"))
 questions: list[str] = list(question_keyword_map.keys())
 
-# ── Prompt template ───────────────────────────────────────────────────
+# ── Prompt template (v2 features) ────────────────────────────────────
 PROMPT_FORMAT = """
 ### 지시문:
 너는 '채점 기준 (루브릭)'에 따라 학생의 에세이를 평가하는 AI 채점기다.
@@ -45,8 +54,7 @@ PROMPT_FORMAT = """
 ### 학생 에세이:
  {essay}
 ### 관련 정보:
-- 핵심 키워드:  {keywords}
-- 주요 언어적 특징: {features}
+{features}
 ### 채점 기준 (루브릭):
 - 과제 수행의 충실성:
   - 9점 (최고): 지시문의 요구와 조건에 맞게 과제를 매우 완벽하게 수행
@@ -91,8 +99,6 @@ for _t in ["<|eot_id|>", "<|end_of_text|>", "</s>"]:
 _stop_ids = sorted(set(_stop_ids))
 print("STOP IDS:", _stop_ids)
 
-# Pre-compute digit token IDs (1-9) for score probability extraction.
-# Both "N" and " N" forms are mapped so either tokenization is handled.
 _DIGIT_TOKEN_IDS: dict[int, int] = {}
 for _d in range(1, 10):
     for _form in [str(_d), f" {_d}"]:
@@ -118,22 +124,13 @@ def build_sampling_params(n: int = 1) -> SamplingParams:
 async def _get_score_probs(
     engine: AsyncLLMEngine, prompt: str, lora_req: LoRARequest
 ) -> list[list[float]] | None:
-    """Single greedy forward pass (temperature=0) with logprobs=10.
-
-    temperature=0  → argmax sampling (reliable score token positions)
-    logprobs       → log_softmax(raw_logits), identical to temperature=1
-                     since vLLM bypasses temperature scaling for greedy.
-
-    Returns 8 lists of 9 floats (prob[score-1] for scores 1-9),
-    or None if the model output couldn't be parsed.
-    """
     params = SamplingParams(
         n=1,
-        max_tokens=25,          # 8 scores + 7 spaces + newline ≈ 16 tokens
-        temperature=0.0,        # greedy → deterministic score positions
+        max_tokens=25,
+        temperature=0.0,
         top_p=1.0,
         repetition_penalty=1.0,
-        logprobs=10,            # top-10 token logprobs at each position
+        logprobs=10,
         stop_token_ids=_stop_ids,
         ignore_eos=False,
         output_kind=RequestOutputKind.FINAL_ONLY,
@@ -147,7 +144,7 @@ async def _get_score_probs(
             request_id=request_id,
             lora_request=lora_req,
         ):
-            output = out   # FINAL_ONLY yields exactly once
+            output = out
     except Exception:
         return None
 
@@ -163,12 +160,9 @@ async def _get_score_probs(
     for tid, lp_dict in zip(completion.token_ids, completion.logprobs):
         if lp_dict is None:
             continue
-
-        # Only process positions where the *generated* token is a score digit.
         if tid not in _DIGIT_TOKEN_IDS:
             continue
 
-        # Collect log-probs for all digit tokens (1-9) visible in the top-10.
         score_lps: dict[int, float] = {}
         for ltid, lp in lp_dict.items():
             if ltid in _DIGIT_TOKEN_IDS:
@@ -179,7 +173,6 @@ async def _get_score_probs(
         if not score_lps:
             continue
 
-        # Normalise over the visible digit tokens (softmax-stable).
         max_lp = max(score_lps.values())
         raw = {s: math.exp(lp - max_lp) for s, lp in score_lps.items()}
         total = sum(raw.values())
@@ -255,18 +248,6 @@ def _filter_cjk(text: str) -> str:
     return re.sub(r" {2,}", " ", text)
 
 
-# ── Feature extraction ────────────────────────────────────────────────
-def build_features_detailed(essay: str) -> tuple[str, dict]:
-    """Return (stringified_for_prompt, {feature: count, ...})."""
-    result = analyze_with_kiwi(essay)
-    raw_tokens = result.get("raw_tokens", [])
-    if not isinstance(raw_tokens, list):
-        return "없음", {}
-    sent_count = len(result.get("sentences", []))
-    features = extract_features_from_raw_tokens(raw_tokens, sentence_count=sent_count)
-    return select_and_stringify(features), features
-
-
 # ── Request schemas ───────────────────────────────────────────────────
 class AnalyzeRequest(BaseModel):
     question_idx: int
@@ -291,25 +272,11 @@ async def get_questions():
     ]
 
 
-@app.post("/api/text-analysis")
-async def text_analysis(req: EssayTextRequest):
-    """형태소 분석 기반 텍스트 분석."""
-    result = await asyncio.to_thread(analyze_with_kiwi, req.essay)
-
-    out_sents = []
-    for sent in result.get("sentences", []):
-        words = []
-        for w in sent.get("words", []):
-            morphemes = []
-            for m in w.get("morphemes", []):
-                surface = m.get("surface", "")
-                tag = m.get("tag", "")
-                feat = token_to_feature(surface, tag)
-                morphemes.append({"surface": surface, "tag": tag, "feature": feat or tag})
-            words.append({"surface": w.get("surface", ""), "morphemes": morphemes})
-        out_sents.append({"text": sent.get("text", ""), "words": words})
-
-    return {"sentences": out_sents}
+@app.post("/api/sentence-count")
+async def sentence_count(req: EssayTextRequest):
+    """문장수만 체크 (bareun AnalyzeSyntax)."""
+    cnt = await asyncio.to_thread(extractor.get_sentence_count, req.essay)
+    return {"sentence_count": cnt}
 
 
 @app.post("/api/analyze")
@@ -321,30 +288,63 @@ async def analyze(req: AnalyzeRequest):
     keywords = question_keyword_map[question]
 
     async def event_stream():
-        # Pre-check: at least 2 sentences required
-        precheck = await asyncio.to_thread(analyze_with_kiwi, req.essay)
-        sent_count = len(precheck.get("sentences", [])) if isinstance(precheck, dict) else 0
+        # Pre-check: sentence count via bareun
+        sent_count = await asyncio.to_thread(extractor.get_sentence_count, req.essay)
         if sent_count < 2:
             yield _sse({
                 "type": "error",
-                "message": "형태소 분석 결과 2문장 이상일 때만 평가할 수 있습니다.",
+                "message": "2문장 이상일 때만 평가할 수 있습니다.",
                 "sentence_count": sent_count,
             })
             yield _sse({"type": "done"})
             return
 
-        # Step 1: feature extraction
+        # Step 1: full feature extraction (morphology + v2 features + grammar)
         yield _sse({"type": "status", "message": "언어 특징 분석 중..."})
-        features_text, features_full = await asyncio.to_thread(build_features_detailed, req.essay)
-        nonzero = {k: v for k, v in features_full.items() if v > 0}
-        yield _sse({"type": "features", "data": features_text, "full": nonzero})
+        extraction = await asyncio.to_thread(
+            extractor.extract_full, question, keywords, req.essay,
+        )
+
+        morph = extraction["morph"]
+        feature_counts = extraction["feature_counts"]
+        prompt_features = extraction["prompt_features"]
+        grammar_result = extraction["grammar_result"]
+
+        # Send features to frontend
+        nonzero_features = {k: v for k, v in feature_counts.items() if v > 0}
+
+        # Build morpheme data for report display
+        morph_display = []
+        for sent in morph.get("sentences", []):
+            sent_tokens = []
+            for tok in sent.get("tokens", []):
+                morphemes = []
+                for m in tok.get("morphemes", []):
+                    feat = token_to_feature(m["surface"], m["tag"])
+                    morphemes.append({
+                        "surface": m["surface"],
+                        "tag": m["tag"],
+                        "feature": feat or m["tag"],
+                    })
+                sent_tokens.append({"surface": tok["surface"], "morphemes": morphemes})
+            morph_display.append({"text": sent["text"], "words": sent_tokens})
+
+        yield _sse({
+            "type": "features",
+            "prompt_features": prompt_features,
+            "feature_counts": nonzero_features,
+            "morph_sentences": morph_display,
+            "grammar": {
+                "spelling_errors": grammar_result.get("spelling_errors", []),
+                "spacing_errors": grammar_result.get("spacing_errors", []),
+            },
+        })
 
         # Step 2: build prompt & generate
         prompt = PROMPT_FORMAT.format(
             question=question,
             essay=req.essay,
-            keywords=keywords,
-            features=features_text,
+            features=prompt_features,
         )
 
         n_samples = 50
@@ -354,9 +354,6 @@ async def analyze(req: AnalyzeRequest):
         sampling_params = build_sampling_params(n=n_samples)
         request_id = str(uuid.uuid4())
 
-        # Launch greedy logprobs pass in parallel with the 50-sample generation.
-        # It generates only ~16 tokens (scores line) so it finishes long before
-        # the main request, adding essentially zero latency.
         logprobs_task = asyncio.create_task(
             _get_score_probs(engine, prompt, LORA_REQ)
         )
@@ -403,7 +400,6 @@ async def analyze(req: AnalyzeRequest):
             "total_count": n_samples,
         })
 
-        # logprobs_task ran concurrently; by now it is already done.
         score_probs = await logprobs_task
         if score_probs:
             yield _sse({"type": "score_probs", "probs": score_probs})
