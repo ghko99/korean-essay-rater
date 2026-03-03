@@ -31,6 +31,7 @@ FastAPI (app.py)
 
 - Python 3.10+
 - CUDA 지원 GPU (vLLM 실행에 필요)
+- Docker (Bareun 형태소 분석기 실행에 필요)
 - base model : meta-llama/Llama-3.1-8B-Instruct (별도 다운로드 필요)
 
 ## 설치
@@ -45,6 +46,54 @@ https://docs.vllm.ai/en/latest/getting_started/installation.html
 ```bash
 pip install -r requirements.txt
 ```
+
+### 3. Bareun 형태소 분석기 설정
+
+Bareun은 형태소 분석(Tagger)과 맞춤법 교정(Corrector)을 제공합니다.
+형태소 분석은 로컬 Docker 컨테이너에서, 맞춤법 교정은 클라우드 API(`api.bareun.ai:443`)를 사용합니다.
+
+#### 3-1. Docker 컨테이너 설치 (최초 1회)
+
+```bash
+# Docker 이미지 다운로드
+docker pull bareunai/bareun:latest
+
+# 볼륨 디렉토리 생성
+mkdir -p ~/bareun/var
+
+# 컨테이너 생성 및 실행
+docker run -d --restart unless-stopped --name bareun \
+  -p 5656:5656 -p 9902:9902 \
+  -v ~/bareun/var:/bareun/var \
+  bareunai/bareun:latest
+
+# API 키 등록
+docker exec bareun /bareun/bin/bareun -reg <YOUR_BAREUN_API_KEY>
+```
+
+> `--restart unless-stopped` 옵션으로 Docker Desktop이 켜지면 자동으로 시작됩니다.
+> 컨테이너가 안 떠있으면 `docker start bareun`으로 시작하세요.
+
+#### 3-2. CA 번들 생성 (맞춤법 교정 API용)
+
+맞춤법 교정 API는 `api.bareun.ai:443`에 gRPC TLS로 접속하며, SSL 중간 인증서가 필요합니다.
+
+```bash
+# Sectigo 중간 인증서 다운로드
+curl -s "http://crt.sectigo.com/SectigoPublicServerAuthenticationCADVR36.crt" \
+  -o /tmp/sectigo_inter.der
+
+# DER → PEM 변환
+openssl x509 -in /tmp/sectigo_inter.der -inform DER -outform PEM \
+  -o /tmp/sectigo_intermediate.pem
+
+# certifi CA + 중간 인증서 합쳐서 CA 번들 생성
+cat /tmp/sectigo_intermediate.pem \
+    $(python -c "import certifi; print(certifi.where())") \
+    > artifacts/bareun_ca_bundle.pem
+```
+
+> 인증서는 2027-03-22에 만료됩니다. 만료 후 위 절차를 다시 수행하세요.
 
 ## 환경 변수 설정
 
@@ -77,6 +126,7 @@ korean_essay_rater/
 ├── requirements.txt
 ├── .env                                # 환경 변수 (BAREUN_API_KEY 등, git 제외)
 ├── artifacts/
+│   ├── bareun_ca_bundle.pem            # Bareun gRPC TLS 인증서 (git 제외)
 │   └── question_requirements.json      # 질문별 요구사항 정의
 ├── templates/
 │   └── index.html                      # 단일 페이지 UI (Chart.js)
